@@ -1,7 +1,11 @@
 import { useQuery } from "react-query";
+import { useWeb3Context } from "../Web3ContextProvider";
 import useWalletContract from "./useWalletContract";
 
-const useTokens = (address, characterId) => {
+const useTokens = (characterId) => {
+  const {
+    web3State: { address },
+  } = useWeb3Context();
   const walletContract = useWalletContract();
   return useQuery(
     ["characterTokens", address, characterId],

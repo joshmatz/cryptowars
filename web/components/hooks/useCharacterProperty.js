@@ -19,10 +19,17 @@ const useCharacterProperty = (characterId, propertyTypeIndex) => {
         // console.error(e);
       }
 
+      // lastCollected is a timestamp in seconds
+      // now - lastColleceted compared to property maxCollection
+      // (now - lastCollected) / maxCollection
+      // const collectionProgress =
+
       return {
         level: _characterProperty.level,
         lastCollected: _characterProperty.lastCollected,
         investedFunds: _characterProperty.investedFunds,
+        // TODO: Return percentage of collection until fully collected.
+        // collectionProgress: collectionProgress,
       };
     },
     {

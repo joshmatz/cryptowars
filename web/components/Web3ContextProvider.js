@@ -38,7 +38,7 @@ const reducer = (state, action) => {
     case "addressUpdate": {
       return {
         ...state,
-        address: action.payload.address,
+        ...action.payload,
       };
     }
     case "invalidChain": {
@@ -52,6 +52,7 @@ const reducer = (state, action) => {
       return {
         ...state,
         ...initialState,
+        connected: false,
       };
     default:
       return state;
@@ -63,24 +64,6 @@ const Web3ContextProvider = ({ children }) => {
     ...initialState,
     isInitializing: true,
   });
-
-  // const connect = useCallback(async () => {
-  //   const provider = new ethers.providers.Web3Provider(instance);
-  //   const signer = provider.getSigner();
-  //   const address = await signer.getAddress();
-  //   const network = await provider.getNetwork();
-
-  //   dispatch({
-  //     type: "connect",
-  //     payload: {
-  //       provider,
-  //       address,
-  //       network,
-  //       connected: true,
-  //       web3ModalInstance: instance,
-  //     },
-  //   });
-  // }, []);
 
   const connect = async () => {
     if (!state.connected) {
@@ -113,7 +96,7 @@ const Web3ContextProvider = ({ children }) => {
       }
 
       const network = await provider.getNetwork();
-      console.log({ network, DEPLOYED_CHAIN });
+
       let isCorrectChain = true;
       if (network.chainId !== DEPLOYED_CHAIN) {
         console.log("isCorrectChain NOT");
@@ -144,13 +127,24 @@ const Web3ContextProvider = ({ children }) => {
         dispatch({
           type: "reset",
         });
+        return;
       }
 
-      const signer = state.provider.getSigner();
-      const address = await signer.getAddress();
+      const provider = new ethers.providers.Web3Provider(state.wallet);
+      const network = await provider.getNetwork();
+      const signer = provider.getSigner();
+      let address;
+      try {
+        address = await signer.getAddress();
+      } catch (e) {
+        dispatch({
+          type: "reset",
+        });
+        return;
+      }
       dispatch({
         type: "addressUpdate",
-        payload: { signer, address },
+        payload: { provider, network, signer, address, connected: true },
       });
     });
 
@@ -169,7 +163,7 @@ const Web3ContextProvider = ({ children }) => {
 
       dispatch({
         type: "chainChanged",
-        payload: { provider, network, signer, isCorrectChain },
+        payload: { provider, network, signer, isCorrectChain, connected: true },
       });
     });
 

@@ -26,7 +26,6 @@ function MyApp({ Component, pageProps }) {
           <Web3ContextProvider>
             <Hydrate state={pageProps.dehydratedState}>
               <AppTemplate>
-                <NetworkButtons />
                 <Component {...pageProps} />
               </AppTemplate>
             </Hydrate>

@@ -3,17 +3,17 @@ import { BigNumber, ethers } from "ethers";
 import { useRouter } from "next/router";
 import { useMemo } from "react";
 import { useMutation, useQueries } from "react-query";
-import { useWeb3Context } from "../../../components/Web3ContextProvider";
-import useCharacterProperty from "../../../components/hooks/useCharacterProperty";
-import usePropertyContract from "../../../components/hooks/usePropertyContract";
-import usePropertyCount from "../../../components/hooks/usePropertyCount";
-import usePropertyTypes from "../../../components/hooks/usePropertyTypes";
-import GameTemplate from "../../../components/modules/GameTemplate";
+import { useWeb3Context } from "../../../../components/Web3ContextProvider";
+import useCharacterProperty from "../../../../components/hooks/useCharacterProperty";
+import usePropertyContract from "../../../../components/hooks/usePropertyContract";
+import usePropertyCount from "../../../../components/hooks/usePropertyCount";
+import usePropertyTypes from "../../../../components/hooks/usePropertyTypes";
+import GameTemplate from "../../../../components/modules/GameTemplate";
 import {
   PropertiesContractAddress,
   PropertiesContractAbi,
   propertyTypeNames,
-} from "../../../constants/game";
+} from "../../../../constants/game";
 
 const PropertyRow = ({ characterId, propertyTypeIndex }) => {
   const { data: propertyType } = usePropertyTypes(propertyTypeIndex);
@@ -47,7 +47,7 @@ const PropertyRow = ({ characterId, propertyTypeIndex }) => {
     <Box display="flex" alignItems="center" mb="5">
       <Text mr="5">
         {propertyTypeNames[propertyTypeIndex]} -{" "}
-        {characterProperty?.level?.toString()}
+        {characterProperty?.level?.toString() || 0}
       </Text>
       {characterProperty?.level ? (
         <>

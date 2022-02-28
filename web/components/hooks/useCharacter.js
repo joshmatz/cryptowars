@@ -1,7 +1,41 @@
 import { useQuery } from "react-query";
+import { useWeb3Context } from "../Web3ContextProvider";
 import useCharacterContract from "./useCharacterContract";
+const fiveMinutes = 5 * 60;
 
-const useCharacter = (address, characterId) => {
+const calculateRegeneratedStat = (stat, max, timeNeeded = fiveMinutes) => {
+  const now = Math.floor(Date.now() / 1000);
+  const lastCollected = stat;
+  const lastCollectedTime = lastCollected.toNumber();
+  const timeDifference = now - lastCollectedTime;
+  const regen = Math.floor(timeDifference / fiveMinutes);
+
+  console.log({ regen });
+  return regen;
+};
+
+const getCurrentStat = (
+  current,
+  max,
+  lastCollected,
+  timeNeeded = fiveMinutes
+) => {
+  const now = Math.floor(Date.now() / 1000);
+  const lastCollectedTime = lastCollected.toNumber();
+  const timeDifference = now - lastCollectedTime;
+  const regen = Math.floor(timeDifference / fiveMinutes);
+  const currentStat = current.add(regen);
+  if (currentStat.gt(max)) {
+    return max;
+  }
+
+  return currentStat;
+};
+
+const useCharacter = (characterId) => {
+  const {
+    web3State: { address },
+  } = useWeb3Context();
   const characterContract = useCharacterContract();
 
   return useQuery(
@@ -41,13 +75,21 @@ const useCharacter = (address, characterId) => {
           lastCollected: _character.defense[3],
         },
         energy: {
-          current: _character.energy[0],
+          current: getCurrentStat(
+            _character.energy[0],
+            _character.energy[2],
+            _character.energy[3]
+          ),
           characterMax: _character.energy[1],
           equippedMax: _character.energy[2],
           lastCollected: _character.energy[3],
         },
         stamina: {
-          current: _character.stamina[0],
+          current: getCurrentStat(
+            _character.stamina[0],
+            _character.stamina[2],
+            _character.stamina[3]
+          ),
           characterMax: _character.stamina[1],
           equippedMax: _character.stamina[2],
           lastCollected: _character.stamina[3],
@@ -55,7 +97,7 @@ const useCharacter = (address, characterId) => {
       };
     },
     {
-      enabled: !!characterId && !!characterContract,
+      enabled: !!characterId && !!characterContract && !!address,
     }
   );
 };

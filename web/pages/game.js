@@ -1,4 +1,15 @@
-import { Box, Button, Link, Text } from "@chakra-ui/react";
+import {
+  Box,
+  Button,
+  Link,
+  Table,
+  Tbody,
+  Td,
+  Text,
+  Th,
+  Thead,
+  Tr,
+} from "@chakra-ui/react";
 import axios from "axios";
 import { BigNumber, ethers, Signer } from "ethers";
 import RouterLink from "next/link";
@@ -10,7 +21,43 @@ import {
   CharacterContractAbi,
   CharacterContractAddress,
 } from "../constants/game";
+import useCharacter from "../components/hooks/useCharacter";
+import useTokens from "../components/hooks/useTokens";
 
+const SimpleCharacterBar = ({ characterId }) => {
+  const { data: character } = useCharacter(characterId);
+  const { data: tokens } = useTokens(characterId);
+  console.log({ tokens });
+  return (
+    <>
+      <Td>{character?.name}</Td>
+      <Td>{tokens ? ethers.utils.formatEther(tokens.toString()) : 0}</Td>
+      <Td>
+        {character?.energy?.current.toString()} /{" "}
+        {character?.energy?.equippedMax.toString()}
+      </Td>
+      <Td>
+        {character?.stamina?.current.toString()} /{" "}
+        {character?.stamina?.equippedMax.toString()}
+      </Td>
+      <Td>
+        {character?.health?.current.toString()} /{" "}
+        {character?.health?.equippedMax.toString()}
+      </Td>
+      <Td>
+        {character?.attack?.equippedMax.toString()} /{" "}
+        {character?.defense?.equippedMax.toString()}
+      </Td>
+      <Td>
+        <RouterLink href={`/game/characters/${characterId}`} passHref>
+          <Button as="a" variant="outline">
+            Control
+          </Button>
+        </RouterLink>
+      </Td>
+    </>
+  );
+};
 const CharacterRow = ({ ownerCharacterIndex }) => {
   const {
     web3State: { signer, address },
@@ -37,37 +84,7 @@ const CharacterRow = ({ ownerCharacterIndex }) => {
     }
   );
 
-  const { data: character = {} } = useQuery(
-    ["characters", address, characterId?.toString()],
-    async () => {
-      const characterContract = new ethers.Contract(
-        CharacterContractAddress,
-        CharacterContractAbi,
-        signer
-      );
-      let _character;
-      try {
-        _character = await characterContract.characters(characterId);
-      } catch (e) {
-        console.error(e);
-      }
-
-      return { ..._character };
-    },
-    {
-      enabled: !!characterId,
-    }
-  );
-
-  return (
-    <Box>
-      <RouterLink href={`characters/${characterId?.toString()}`}>
-        <Link>
-          {character.name} - {characterId?.toString()}
-        </Link>
-      </RouterLink>
-    </Box>
-  );
+  return <SimpleCharacterBar characterId={characterId?.toString()} />;
 };
 
 const CharacterView = () => {
@@ -75,24 +92,25 @@ const CharacterView = () => {
     web3State: { signer, address },
   } = useWeb3Context();
 
-  const { data: characterCount = BigNumber.from(0), refetch } = useQuery(
-    ["characters", address],
-    async () => {
-      const characterContract = new ethers.Contract(
-        CharacterContractAddress,
-        CharacterContractAbi,
-        signer
-      );
+  const {
+    data: characterCount = BigNumber.from(0),
+    refetch,
+    status: characterCountStatus,
+  } = useQuery(["characters", address], async () => {
+    const characterContract = new ethers.Contract(
+      CharacterContractAddress,
+      CharacterContractAbi,
+      signer
+    );
 
-      let characters;
-      try {
-        characters = await characterContract.balanceOf(address);
-      } catch (e) {
-        console.log(e);
-      }
-      return characters;
+    let characters;
+    try {
+      characters = await characterContract.balanceOf(address);
+    } catch (e) {
+      console.log(e);
     }
-  );
+    return characters;
+  });
 
   const { mutate: createCharacter } = useMutation(
     async () => {
@@ -110,20 +128,38 @@ const CharacterView = () => {
     }
   );
 
+  if (characterCountStatus === "loading") {
+    return null;
+  }
+
   return (
-    <Box>
+    <Box mb={10}>
+      <Table mb={5}>
+        <Thead>
+          <Tr>
+            <Th>Name</Th>
+            <Th>Monies</Th>
+            <Th>Energy</Th>
+            <Th>Stamina</Th>
+            <Th>Health</Th>
+            <Th>Atk/Def</Th>
+            <Th></Th>
+          </Tr>
+        </Thead>
+        <Tbody>
+          {Array.from(Array(characterCount.toNumber())).map(
+            (i, ownerCharacterIndex) => {
+              return (
+                <Tr key={ownerCharacterIndex}>
+                  <CharacterRow ownerCharacterIndex={ownerCharacterIndex} />
+                </Tr>
+              );
+            }
+          )}
+        </Tbody>
+      </Table>
       <Text mb="2">Character Count: {characterCount?.toString()}</Text>
       <Button onClick={createCharacter}>Create character</Button>
-      {Array.from(Array(characterCount.toNumber())).map(
-        (i, ownerCharacterIndex) => {
-          return (
-            <CharacterRow
-              ownerCharacterIndex={ownerCharacterIndex}
-              key={ownerCharacterIndex}
-            />
-          );
-        }
-      )}
     </Box>
   );
 };

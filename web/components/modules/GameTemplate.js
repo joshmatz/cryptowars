@@ -1,4 +1,4 @@
-import { Box, Button, Link } from "@chakra-ui/react";
+import { Box, Button, Container, Link, Text } from "@chakra-ui/react";
 import Head from "next/head";
 import RouterLink from "next/link";
 import { useRouter } from "next/router";
@@ -11,35 +11,51 @@ const GameNavigation = () => {
   const router = useRouter();
   const {
     query: { characterId },
+    asPath,
   } = router;
+
+  const navLinks = [
+    {
+      href: `/game/characters/${characterId}`,
+      label: "Home",
+    },
+    {
+      href: `/game/characters/${characterId}/jobs`,
+      label: "Jobs",
+    },
+    {
+      href: `/game/characters/${characterId}/properties`,
+      label: "Properties",
+    },
+    {
+      href: `/game/characters/${characterId}/fight`,
+      label: "Fight",
+    },
+    {
+      href: `/game/characters/${characterId}/inventory`,
+      label: "Inventory",
+    },
+    {
+      href: `/game/characters/${characterId}/store`,
+      label: "Store",
+    },
+  ];
+
   return (
-    <Box display="flex">
+    <Box display="flex" mb={10}>
       <Box>
-        <RouterLink href={`/characters/${characterId}`}>
-          <Link as={Button} variant="ghost">
-            Home
-          </Link>
-        </RouterLink>
-        <RouterLink href={`/characters/${characterId}/properties`}>
-          <Link as={Button} variant="ghost">
-            Properties
-          </Link>
-        </RouterLink>
-        <RouterLink href={`/characters/${characterId}/jobs`}>
-          <Link as={Button} variant="ghost">
-            Jobs
-          </Link>
-        </RouterLink>
-        <RouterLink href={`/characters/${characterId}/fight`}>
-          <Link as={Button} variant="ghost">
-            Fight
-          </Link>
-        </RouterLink>
-        <RouterLink href={`/characters/${characterId}/inventory`}>
-          <Link as={Button} variant="ghost">
-            Inventory
-          </Link>
-        </RouterLink>
+        {navLinks.map((item) => {
+          return (
+            <RouterLink passHref href={item.href}>
+              <Button
+                as="a"
+                variant={item.href === asPath ? undefined : "ghost"}
+              >
+                {item.label}
+              </Button>
+            </RouterLink>
+          );
+        })}
       </Box>
     </Box>
   );
@@ -52,21 +68,40 @@ const GameTemplate = ({ children, characterId }) => {
   }
 
   return (
-    <Box p={5}>
+    <>
       <Head>
         <title>CryptoWars</title>
       </Head>
-      <NetworkButtons />
-      {characterId ? (
-        <>
-          <CharacterBar />
-          <GameNavigation />
-        </>
-      ) : null}
-
-      {children}
+      <Container maxW="container.xl" py={4}>
+        <Box
+          mb={10}
+          display="flex"
+          justifyContent="space-between"
+          alignItems="center"
+        >
+          <Box display="flex" alignItems="center">
+            <RouterLink href="/">
+              <Text fontSize="3xl" fontFamily={"heading"} mr={2}>
+                CryptoWars
+              </Text>
+            </RouterLink>
+          </Box>
+          <Box>
+            <NetworkButtons />
+          </Box>
+        </Box>
+      </Container>
+      <Container maxW="container.xl">
+        {characterId ? (
+          <>
+            <CharacterBar characterId={characterId} />
+            <GameNavigation characterId={characterId} />
+          </>
+        ) : null}
+        <Box>{children}</Box>
+      </Container>
       <ChainCheckModal />
-    </Box>
+    </>
   );
 };
 

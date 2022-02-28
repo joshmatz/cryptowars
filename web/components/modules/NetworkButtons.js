@@ -25,7 +25,11 @@ const ConnectButton = () => {
   const { connect, web3State } = useWeb3Context();
 
   if (web3State.network?.chainId !== HOSTED_NETWORK) {
-    return <Button onClick={connect}>Wrong Network</Button>;
+    return (
+      <Button onClick={connect} variant="outline">
+        Wrong Network
+      </Button>
+    );
   }
 
   return web3State.address ? (
@@ -40,7 +44,9 @@ const ConnectButton = () => {
 const NetworkButtons = () => {
   return (
     <Box>
-      <Button mr="2">{NETWORK_NAME}</Button>
+      <Button mr="2" variant="outline">
+        {NETWORK_NAME}
+      </Button>
       <ConnectButton />
     </Box>
   );
