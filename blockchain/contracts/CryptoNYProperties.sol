@@ -109,14 +109,6 @@ contract CryptoNYProperties is ERC721, ERC721Enumerable, Ownable {
             );
         }
 
-        // TODO: Assign property to character
-        // By assigning to a character, it makes trading properties much more
-        // difficult... it means you could take a very overpowered property
-        // and let the character use it to collect revenue.
-        // Can do both things:
-        // 1. Properties should have a minimum character level.
-        // 2. Charge a 3% fee of fully invested property value to change character ownership.
-
         _safeMint(msg.sender, totalSupply());
         _createProperty(characterId, propertyType);
     }
@@ -222,6 +214,8 @@ contract CryptoNYProperties is ERC721, ERC721Enumerable, Ownable {
         isCharacterOwner(characterId)
         isPropertyOwner(propertyId)
     {
+        // TODO: This should be property type, which would be an index, and not propertyId
+        // In which case, it should store the value of the propertyId rather than a boolean
         require(
             characterPropertyTypes[characterId][propertyId] == false,
             "CryptoNyProperties.transferPropertyToCharacter.alreadyOwnsProperty"
@@ -254,6 +248,9 @@ contract CryptoNYProperties is ERC721, ERC721Enumerable, Ownable {
         uint256 maxLevel,
         uint256 maxCollection
     ) external onlyOwner {
+        // TODO: this needs to keep track of how many there are
+        // because we can't return the entire array and it's
+        // easiest to use the total supply as a maximum index.
         propertyTypes.push(
             Property(
                 cost,

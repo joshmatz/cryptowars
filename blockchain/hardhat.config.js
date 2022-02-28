@@ -144,6 +144,10 @@ module.exports = {
   networks: {
     hardhat: {
       chainId: 1337,
+      mining: {
+        auto: true,
+        interval: 5000,
+      },
     },
     ropsten: {
       url: process.env.ROPSTEN_URL || "",

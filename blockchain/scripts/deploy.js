@@ -155,6 +155,13 @@ async function main() {
   }
 
   console.log("Gas to deploy: ", gastotal.toString());
+  console.log(`const CharacterContractAddress = "${cryptoChar.address}"`);
+  console.log(`const WalletContractAddress = "${cryptoNyWallet.address}"`);
+  console.log(
+    `const PropertiesContractAddress = "${cryptoNyProperties.address}"`
+  );
+  console.log(`const JobsContractAddress = "${cryptoNyJobs.address}"`);
+  console.log(`const TokenContractAddress = "${cryptoNyERC20.address}"`);
 
   await cryptoNyERC20.connect(owner);
 
@@ -172,12 +179,12 @@ async function main() {
 
 // We recommend this pattern to be able to use async/await everywhere
 // and properly handle errors.
-// const deployPromise = main()
-//   .then(() => {})
-//   .catch((error) => {
-//     console.error(error);
-//     process.exitCode = 1;
-//   });
+const deployPromise = main()
+  .then(() => {})
+  .catch((error) => {
+    console.error(error);
+    process.exitCode = 1;
+  });
 
 module.exports = {
   // deployPromise,
