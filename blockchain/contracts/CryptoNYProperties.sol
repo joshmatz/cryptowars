@@ -51,8 +51,9 @@ contract CryptoNYProperties is ERC721, ERC721Enumerable, Ownable {
     // Characters can only have a single property type NFT
     // so map character IDs to property types as a way to
     // check ownership of property types.
-    // [characterId][propertyId] = 0 || 1
+    // [characterId][propertyType] = 0 || 1
     mapping(uint256 => mapping(uint256 => bool)) public characterPropertyTypes;
+    mapping(uint256 => mapping(uint256 => uint256)) public characterPropertyIds;
 
     // Management contracts
     address public characterContract;
@@ -214,14 +215,13 @@ contract CryptoNYProperties is ERC721, ERC721Enumerable, Ownable {
         isCharacterOwner(characterId)
         isPropertyOwner(propertyId)
     {
-        // TODO: This should be property type, which would be an index, and not propertyId
-        // In which case, it should store the value of the propertyId rather than a boolean
+        OwnedProperty storage _b = properties[propertyId];
+
         require(
-            characterPropertyTypes[characterId][propertyId] == false,
+            characterPropertyTypes[characterId][_b.propertyType] == false,
             "CryptoNyProperties.transferPropertyToCharacter.alreadyOwnsProperty"
         );
 
-        OwnedProperty storage _b = properties[propertyId];
         Property storage _bType = propertyTypes[_b.propertyType];
 
         ICryptoNyWallet(walletContract).burnFromCharacter(
@@ -235,9 +235,10 @@ contract CryptoNYProperties is ERC721, ERC721Enumerable, Ownable {
         );
 
         characterPropertyTypes[properties[propertyId].characterId][
-            propertyId
+            _b.propertyType
         ] = false;
-        characterPropertyTypes[characterId][propertyId] = true;
+        characterPropertyTypes[characterId][_b.propertyType] = true;
+        characterPropertyIds[characterId][_b.propertyType] = propertyId;
         properties[propertyId].characterId = characterId;
     }
 
@@ -248,9 +249,6 @@ contract CryptoNYProperties is ERC721, ERC721Enumerable, Ownable {
         uint256 maxLevel,
         uint256 maxCollection
     ) external onlyOwner {
-        // TODO: this needs to keep track of how many there are
-        // because we can't return the entire array and it's
-        // easiest to use the total supply as a maximum index.
         propertyTypes.push(
             Property(
                 cost,
@@ -273,6 +271,7 @@ contract CryptoNYProperties is ERC721, ERC721Enumerable, Ownable {
             OwnedProperty(characterId, propertyType, 1, block.timestamp, 0)
         );
         characterPropertyTypes[characterId][propertyType] = true;
+        characterPropertyIds[characterId][propertyType] = properties.length - 1;
     }
 
     // The following functions are overrides required by Solidity.

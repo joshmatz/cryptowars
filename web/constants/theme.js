@@ -20,6 +20,13 @@ const theme = extendTheme({
       900: "#191919",
     },
   },
+  components: {
+    Button: {
+      baseStyle: {
+        borderRadius: "none",
+      },
+    },
+  },
   styles: {
     global: (props) => ({
       body: {

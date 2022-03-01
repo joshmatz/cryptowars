@@ -27,7 +27,7 @@ import useTokens from "../components/hooks/useTokens";
 const SimpleCharacterBar = ({ characterId }) => {
   const { data: character } = useCharacter(characterId);
   const { data: tokens } = useTokens(characterId);
-  console.log({ tokens });
+
   return (
     <>
       <Td>{character?.name}</Td>
@@ -107,7 +107,7 @@ const CharacterView = () => {
     try {
       characters = await characterContract.balanceOf(address);
     } catch (e) {
-      console.log(e);
+      console.error(e);
     }
     return characters;
   });

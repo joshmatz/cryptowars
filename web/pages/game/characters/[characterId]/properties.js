@@ -1,7 +1,7 @@
-import { Box, Button, Text } from "@chakra-ui/react";
+import { Box, Button, Icon, Text, Tooltip } from "@chakra-ui/react";
 import { BigNumber, ethers } from "ethers";
 import { useRouter } from "next/router";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useMutation, useQueries } from "react-query";
 import { useWeb3Context } from "../../../../components/Web3ContextProvider";
 import useCharacterProperty from "../../../../components/hooks/useCharacterProperty";
@@ -14,110 +14,221 @@ import {
   PropertiesContractAbi,
   propertyTypeNames,
 } from "../../../../constants/game";
+import { useEffect } from "react/cjs/react.development";
+import { formatDistance, formatDistanceStrict, fromUnixTime } from "date-fns";
+import {
+  MdOutlineBatteryChargingFull,
+  MdBatteryCharging20,
+} from "react-icons/md";
+import formatNumber from "../../../../utils/formatNumber";
+
+const calculateUpgradeCost = ({
+  costPerLevel,
+  cost,
+  levels = 1,
+  currentLevel,
+}) => {
+  return cost
+    .mul(levels)
+    .add(currentLevel.add(levels).div(2).mul(levels).mul(costPerLevel));
+};
+
+const useTimer = (lastCollected, maxCollection) => {
+  const [time, setTime] = useState(
+    lastCollected?.add(maxCollection) - new Date().getTime() / 1000
+  );
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setTime(time - 1);
+
+      if (time <= 0) {
+        clearInterval(interval);
+      }
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [time]);
+
+  useEffect(() => {
+    setTime(lastCollected?.add(maxCollection) - new Date().getTime() / 1000);
+  }, [lastCollected]);
+
+  return {
+    time,
+    percentFull: Math.max(
+      0,
+      Math.round((100 * (maxCollection - time)) / maxCollection)
+    ),
+  };
+};
+
+const Timer = ({ time, percentFull, lastCollected, maxCollection }) => {
+  if (time <= 0) {
+    return (
+      <Box display="flex" alignItems="center" mr={5}>
+        <Text>100% Capacity</Text>
+        <Icon as={MdOutlineBatteryChargingFull} w={5} h={5} />
+      </Box>
+    );
+  }
+
+  return (
+    <Tooltip
+      label={`${formatDistanceStrict(
+        fromUnixTime(new Date().getTime() / 1000),
+        fromUnixTime(lastCollected.add(maxCollection).toNumber())
+      )} to go`}
+    >
+      <Box display="flex" alignItems="center" mr={5}>
+        <Text mr={2}>{percentFull}% Capacity</Text>
+        {time !== 0 ? <Icon as={MdBatteryCharging20} w={5} h={5} /> : null}
+      </Box>
+    </Tooltip>
+  );
+};
 
 const PropertyRow = ({ characterId, propertyTypeIndex }) => {
   const { data: propertyType } = usePropertyTypes(propertyTypeIndex);
 
-  const { data: characterProperty } = useCharacterProperty(
+  const { data: characterProperty, refetch } = useCharacterProperty(
     characterId,
     propertyTypeIndex
   );
 
   const propertiesContract = usePropertyContract();
 
-  const { mutate: purchaseProperty } = useMutation(async () => {
-    const tx = await propertiesContract.purchaseProperty(characterId, 0);
-    await tx.wait(1, 0, 0, 60);
-    return;
-  });
+  const { mutate: purchaseProperty } = useMutation(
+    async () => {
+      const tx = await propertiesContract.purchaseProperty(
+        characterId,
+        propertyTypeIndex
+      );
+      await tx.wait(1, 0, 0, 60);
+      return;
+    },
+    {
+      onSuccess: refetch,
+    }
+  );
 
-  const { mutate: collectRevenue } = useMutation(async () => {
-    const tx = await propertiesContract.collectRevenue(characterId, 0);
-    await tx.wait(1, 0, 0, 60);
-    return;
-  });
+  const { mutate: collectRevenue } = useMutation(
+    async () => {
+      const tx = await propertiesContract.collectRevenue(
+        characterId,
+        characterProperty?.id
+      );
+      await tx.wait(1, 0, 0, 60);
+      return;
+    },
+    {
+      onSuccess: () => {
+        console.log("refetching", { propertyTypeIndex });
+        refetch();
+      },
+    }
+  );
 
-  const { mutate: upgradeProperty } = useMutation(async () => {
-    const tx = await propertiesContract.upgradeProperty(characterId, 0, 1);
-    await tx.wait(1, 0, 0, 60);
-    return;
-  });
+  const { mutate: upgradeProperty } = useMutation(
+    async () => {
+      const tx = await propertiesContract.upgradeProperty(
+        characterId,
+        characterProperty?.id,
+        1
+      );
+      await tx.wait(1, 0, 0, 60);
+      return;
+    },
+    {
+      onSuccess: refetch,
+    }
+  );
+
+  const { time, percentFull } = useTimer(
+    characterProperty?.lastCollected,
+    propertyType?.maxCollection
+  );
+
+  if (!characterProperty) {
+    return null;
+  }
+
+  const bonusCapacityMul = percentFull === 100 ? 11 : 10;
 
   return (
-    <Box display="flex" alignItems="center" mb="5">
-      <Text mr="5">
-        {propertyTypeNames[propertyTypeIndex]} -{" "}
-        {characterProperty?.level?.toString() || 0}
-      </Text>
-      {characterProperty?.level ? (
-        <>
+    <Box
+      display="flex"
+      justifyContent={"space-between"}
+      alignItems="center"
+      mb="5"
+      borderBottom="1px"
+      borderColor="gray.700"
+    >
+      <Box>
+        <Text fontWeight="bold">{propertyTypeNames[propertyTypeIndex]}</Text>
+        <Text>Level {characterProperty.level?.toString() || 0}</Text>
+      </Box>
+      {characterProperty.level ? (
+        <Box display="flex">
+          <Timer
+            time={time}
+            percentFull={percentFull}
+            lastCollected={characterProperty.lastCollected}
+            maxCollection={propertyType.maxCollection}
+          />
+
           <Button
             onClick={upgradeProperty}
             mr="2"
-            disabled={characterProperty?.level?.eq(propertyType.maxLevel)}
+            disabled={characterProperty.level?.eq(propertyType.maxLevel)}
           >
-            Upgrade
+            {characterProperty.level?.eq(propertyType.maxLevel)
+              ? "Max Level"
+              : `Upgrade: $${formatNumber(
+                  calculateUpgradeCost({
+                    costPerLevel: propertyType.costPerLevel,
+                    cost: propertyType.cost,
+                    currentLevel: characterProperty.level,
+                  })
+                )}`}
           </Button>
-          <Button onClick={collectRevenue}>Collect</Button>
-        </>
+          <Button onClick={collectRevenue}>
+            Collect{" "}
+            {propertyType?.incomePerLevel &&
+            characterProperty?.level &&
+            percentFull
+              ? `$${formatNumber(
+                  propertyType.incomePerLevel
+                    .mul(characterProperty.level)
+                    .mul(percentFull)
+                    .div(100)
+                    .mul(bonusCapacityMul)
+                    .div(10)
+                )}`
+              : ""}
+          </Button>
+        </Box>
       ) : (
         <Button onClick={purchaseProperty}>
           Purchase: $
-          {propertyType?.cost
-            ? ethers.utils.formatEther(propertyType.cost)
-            : null}
+          {propertyType?.cost ? formatNumber(propertyType.cost) : null}
         </Button>
       )}
     </Box>
   );
 };
 
-const CharacterPage = () => {
+const PropertiesPage = () => {
   const router = useRouter();
   const {
     query: { characterId },
   } = router;
-  const {
-    web3State: { signer, address },
-  } = useWeb3Context();
-
-  const propertiesContract = useMemo(() => {
-    if (!signer) {
-      return null;
-    }
-    const _pc = new ethers.Contract(
-      PropertiesContractAddress,
-      PropertiesContractAbi,
-      signer
-    );
-    return _pc;
-  }, [signer]);
-
-  const { data: propertiesCount = BigNumber.from(0) } =
-    usePropertyCount(address);
-
-  const queries = useQueries(
-    Array.apply(null, Array(propertiesCount.toNumber())).map((_, i) => {
-      return {
-        queryKey: ["propertyIds", address, i],
-        queryFn: async () => {
-          let propertyId;
-          try {
-            propertyId = await propertiesContract.tokenOfOwnerByIndex(
-              address,
-              i
-            );
-          } catch (e) {
-            console.log(e);
-          }
-          return propertyId;
-        },
-      };
-    })
-  );
 
   return (
     <GameTemplate characterId={characterId}>
+      <Text mb={5}>
+        Purchase properties and level them up for more ponzinomics.
+      </Text>
+
       {Array.apply(null, Array(10)).map((_, i) => {
         return (
           <PropertyRow
@@ -131,4 +242,4 @@ const CharacterPage = () => {
   );
 };
 
-export default CharacterPage;
+export default PropertiesPage;

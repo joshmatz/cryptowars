@@ -717,7 +717,7 @@ describe("CryptoChar", function () {
         await expect(
           cryptoNyProperties
             .connect(guest)
-            .purchaseProperty(guestCharacterId, 2)
+            .purchaseProperty(guestCharacterId, 1)
         ).to.be.revertedWith(
           "CryptoNyProperties.purchaseProperty.alreadyOwned"
         );
@@ -725,18 +725,28 @@ describe("CryptoChar", function () {
     });
 
     describe("purchase and assign owned property type to same character", function () {
+      const propertyType = 2;
+      let propertyId;
       this.beforeAll(async () => {
-        await cryptoNyProperties.purchaseProperty(ownerCharacterId, 2);
+        await cryptoNyProperties.purchaseProperty(
+          ownerCharacterId,
+          propertyType
+        );
         await cryptoNyProperties
           .connect(guest)
-          .transferFrom(guest.address, owner.address, 2);
+          .purchaseProperty(guestCharacterId, propertyType);
+        const totalSupply = await cryptoNyProperties.totalSupply();
+        propertyId = totalSupply.sub(1);
+        await cryptoNyProperties
+          .connect(guest)
+          .transferFrom(guest.address, owner.address, propertyId);
       });
 
       it("should not allow assigning a the property type", async () => {
         await expect(
           cryptoNyProperties
             .connect(owner)
-            .assignPropertyToCharacter(ownerCharacterId, 2)
+            .assignPropertyToCharacter(ownerCharacterId, propertyId)
         ).to.be.revertedWith(
           "CryptoNyProperties.transferPropertyToCharacter.alreadyOwnsProperty"
         );

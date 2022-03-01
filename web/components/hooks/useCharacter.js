@@ -1,18 +1,9 @@
+import { useState } from "react";
 import { useQuery } from "react-query";
+import { useEffect } from "react/cjs/react.development";
 import { useWeb3Context } from "../Web3ContextProvider";
 import useCharacterContract from "./useCharacterContract";
 const fiveMinutes = 5 * 60;
-
-const calculateRegeneratedStat = (stat, max, timeNeeded = fiveMinutes) => {
-  const now = Math.floor(Date.now() / 1000);
-  const lastCollected = stat;
-  const lastCollectedTime = lastCollected.toNumber();
-  const timeDifference = now - lastCollectedTime;
-  const regen = Math.floor(timeDifference / fiveMinutes);
-
-  console.log({ regen });
-  return regen;
-};
 
 const getCurrentStat = (
   current,
@@ -21,15 +12,71 @@ const getCurrentStat = (
   timeNeeded = fiveMinutes
 ) => {
   const now = Math.floor(Date.now() / 1000);
+
   const lastCollectedTime = lastCollected.toNumber();
   const timeDifference = now - lastCollectedTime;
+  if (timeDifference <= 0) {
+    return current;
+  }
+
   const regen = Math.floor(timeDifference / fiveMinutes);
-  const currentStat = current.add(regen);
-  if (currentStat.gt(max)) {
+  const newStat = current.add(regen);
+
+  if (newStat.gt(max)) {
     return max;
   }
 
-  return currentStat;
+  return newStat;
+};
+
+const adjustCurrentStats = (c) => {
+  if (!c) {
+    return;
+  }
+
+  return {
+    ...c,
+    attack: {
+      ...c.attack,
+      adjustedCurrent: getCurrentStat(
+        c.attack.current,
+        c.attack.characterMax,
+        c.attack.lastCollected
+      ),
+    },
+    health: {
+      ...c.health,
+      adjustedCurrent: getCurrentStat(
+        c.health.current,
+        c.health.characterMax,
+        c.health.lastCollected
+      ),
+    },
+    defense: {
+      ...c.defense,
+      adjustedCurrent: getCurrentStat(
+        c.defense.current,
+        c.defense.characterMax,
+        c.defense.lastCollected
+      ),
+    },
+    energy: {
+      ...c.energy,
+      adjustedCurrent: getCurrentStat(
+        c.energy.current,
+        c.energy.characterMax,
+        c.energy.lastCollected
+      ),
+    },
+    stamina: {
+      ...c.stamina,
+      adjustedCurrent: getCurrentStat(
+        c.stamina.current,
+        c.stamina.characterMax,
+        c.stamina.lastCollected
+      ),
+    },
+  };
 };
 
 const useCharacter = (characterId) => {
@@ -38,7 +85,7 @@ const useCharacter = (characterId) => {
   } = useWeb3Context();
   const characterContract = useCharacterContract();
 
-  return useQuery(
+  const res = useQuery(
     ["characters", address, characterId],
     async () => {
       let _character;
@@ -57,42 +104,37 @@ const useCharacter = (characterId) => {
         skillPoints: _character.skillPoints,
 
         attack: {
-          current: _character.attack[0],
-          characterMax: _character.attack[1],
-          equippedMax: _character.attack[2],
-          lastCollected: _character.attack[3],
+          current: _character.attack.current,
+          characterMax: _character.attack.characterMax,
+          equippedMax: _character.attack.equippedMax,
+          lastCollected: _character.attack.lastCollected,
         },
         health: {
-          current: _character.health[0],
-          characterMax: _character.health[1],
-          equippedMax: _character.health[2],
-          lastCollected: _character.health[3],
+          adjustedCurrent: _character.health.current,
+          current: _character.health.current,
+          characterMax: _character.health.characterMax,
+          equippedMax: _character.health.equippedMax,
+          lastCollected: _character.health.lastCollected,
         },
         defense: {
-          current: _character.defense[0],
-          characterMax: _character.defense[1],
-          equippedMax: _character.defense[2],
-          lastCollected: _character.defense[3],
+          current: _character.defense.current,
+          characterMax: _character.defense.characterMax,
+          equippedMax: _character.defense.equippedMax,
+          lastCollected: _character.defense.lastCollected,
         },
         energy: {
-          current: getCurrentStat(
-            _character.energy[0],
-            _character.energy[2],
-            _character.energy[3]
-          ),
-          characterMax: _character.energy[1],
-          equippedMax: _character.energy[2],
-          lastCollected: _character.energy[3],
+          adjustedCurrent: _character.energy.current,
+          current: _character.energy.current,
+          characterMax: _character.energy.characterMax,
+          equippedMax: _character.energy.equippedMax,
+          lastCollected: _character.energy.lastCollected,
         },
         stamina: {
-          current: getCurrentStat(
-            _character.stamina[0],
-            _character.stamina[2],
-            _character.stamina[3]
-          ),
-          characterMax: _character.stamina[1],
-          equippedMax: _character.stamina[2],
-          lastCollected: _character.stamina[3],
+          adjustedCurrent: _character.stamina.current,
+          current: _character.stamina.current,
+          characterMax: _character.stamina.characterMax,
+          equippedMax: _character.stamina.equippedMax,
+          lastCollected: _character.stamina.lastCollected,
         },
       };
     },
@@ -100,6 +142,19 @@ const useCharacter = (characterId) => {
       enabled: !!characterId && !!characterContract && !!address,
     }
   );
+
+  const [character, setCharacter] = useState(res.data);
+
+  useEffect(() => {
+    setCharacter(adjustCurrentStats(res.data));
+    const interval = setInterval(() => {
+      setCharacter(adjustCurrentStats);
+    }, 1000 * 60);
+
+    return () => clearInterval(interval);
+  }, [res.data]);
+
+  return { ...res, data: character };
 };
 
 export default useCharacter;

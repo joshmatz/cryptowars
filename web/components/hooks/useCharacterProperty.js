@@ -8,28 +8,32 @@ const useCharacterProperty = (characterId, propertyTypeIndex) => {
     ["characterProperty", characterId, propertyTypeIndex],
     async () => {
       let _characterProperty = {};
+      let _propertyId;
       try {
-        if (propertyTypeIndex === 0) {
-          // TODO: index should be property id...
-          _characterProperty = await propertiesContract.properties(
+        const hasProperty = await propertiesContract.characterPropertyTypes(
+          characterId,
+          propertyTypeIndex
+        );
+
+        if (hasProperty) {
+          _propertyId = await propertiesContract.characterPropertyIds(
+            characterId,
             propertyTypeIndex
           );
+        } else {
+          return _characterProperty;
         }
+
+        _characterProperty = await propertiesContract.properties(_propertyId);
       } catch (e) {
-        // console.error(e);
+        console.error(e);
       }
 
-      // lastCollected is a timestamp in seconds
-      // now - lastColleceted compared to property maxCollection
-      // (now - lastCollected) / maxCollection
-      // const collectionProgress =
-
       return {
+        id: _propertyId,
         level: _characterProperty.level,
         lastCollected: _characterProperty.lastCollected,
         investedFunds: _characterProperty.investedFunds,
-        // TODO: Return percentage of collection until fully collected.
-        // collectionProgress: collectionProgress,
       };
     },
     {

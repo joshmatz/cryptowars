@@ -46,7 +46,7 @@ const GameNavigation = () => {
       <Box>
         {navLinks.map((item) => {
           return (
-            <RouterLink passHref href={item.href}>
+            <RouterLink passHref href={item.href} key={item.href}>
               <Button
                 as="a"
                 variant={item.href === asPath ? undefined : "ghost"}

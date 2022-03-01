@@ -10,7 +10,7 @@ const usePropertyCount = (address) => {
       try {
         properties = await propertiesContract.balanceOf(address);
       } catch (e) {
-        console.log(e);
+        console.error(e);
       }
       return properties;
     },

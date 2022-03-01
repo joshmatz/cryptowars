@@ -155,13 +155,19 @@ async function main() {
   }
 
   console.log("Gas to deploy: ", gastotal.toString());
-  console.log(`const CharacterContractAddress = "${cryptoChar.address}"`);
-  console.log(`const WalletContractAddress = "${cryptoNyWallet.address}"`);
   console.log(
-    `const PropertiesContractAddress = "${cryptoNyProperties.address}"`
+    `export const CharacterContractAddress = "${cryptoChar.address}";`
   );
-  console.log(`const JobsContractAddress = "${cryptoNyJobs.address}"`);
-  console.log(`const TokenContractAddress = "${cryptoNyERC20.address}"`);
+  console.log(
+    `export const WalletContractAddress = "${cryptoNyWallet.address}";`
+  );
+  console.log(
+    `export const PropertiesContractAddress = "${cryptoNyProperties.address}";`
+  );
+  console.log(`export const JobsContractAddress = "${cryptoNyJobs.address}";`);
+  console.log(
+    `export const TokenContractAddress = "${cryptoNyERC20.address}";`
+  );
 
   await cryptoNyERC20.connect(owner);
 

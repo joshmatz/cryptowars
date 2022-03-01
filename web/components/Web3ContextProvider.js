@@ -75,7 +75,6 @@ const Web3ContextProvider = ({ children }) => {
         method: "wallet_switchEthereumChain",
         params: [{ chainId: `0x${DEPLOYED_CHAIN.toString(16)}` }],
       });
-      console.log({ res });
     }
   };
 
@@ -99,7 +98,6 @@ const Web3ContextProvider = ({ children }) => {
 
       let isCorrectChain = true;
       if (network.chainId !== DEPLOYED_CHAIN) {
-        console.log("isCorrectChain NOT");
         isCorrectChain = false;
       }
 
@@ -155,11 +153,9 @@ const Web3ContextProvider = ({ children }) => {
       const network = await provider.getNetwork();
       const signer = provider.getSigner();
       if (network.chainId !== DEPLOYED_CHAIN) {
-        console.log("chainwrong");
         dispatch({ type: "invalidChain" });
         return;
       }
-      console.log("chainChanged");
 
       dispatch({
         type: "chainChanged",
