@@ -17,16 +17,13 @@ import { useMutation, useQuery } from "react-query";
 import NetworkButtons from "../components/modules/NetworkButtons";
 import GameTemplate from "../components/modules/GameTemplate";
 import { useWeb3Context } from "../components/Web3ContextProvider";
-import {
-  CharacterContractAbi,
-  CharacterContractAddress,
-} from "../constants/game";
+import { CharacterContractAddress } from "../constants/game";
 import useCharacter from "../components/hooks/useCharacter";
-import useTokens from "../components/hooks/useTokens";
-
+import useCharacterTokens from "../components/hooks/useCharacterTokens";
+import CharacterContractAbi from "../constants/contracts/CharacterContractAbi";
 const SimpleCharacterBar = ({ characterId }) => {
   const { data: character } = useCharacter(characterId);
-  const { data: tokens } = useTokens(characterId);
+  const { data: tokens } = useCharacterTokens(characterId);
 
   return (
     <>

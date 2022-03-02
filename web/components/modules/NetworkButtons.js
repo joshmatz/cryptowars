@@ -1,4 +1,4 @@
-import { Box, Button, Text } from "@chakra-ui/react";
+import { Box, Button, Stack, Text } from "@chakra-ui/react";
 import { useWeb3Context } from "../Web3ContextProvider";
 
 const HOSTED_NETWORK = 1337;
@@ -43,12 +43,10 @@ const ConnectButton = () => {
 
 const NetworkButtons = () => {
   return (
-    <Box>
-      <Button mr="2" variant="outline">
-        {NETWORK_NAME}
-      </Button>
+    <Stack direction={{ base: "column", sm: "row" }} alignItems="flex-end">
+      <Button variant="outline">{NETWORK_NAME}</Button>
       <ConnectButton />
-    </Box>
+    </Stack>
   );
 };
 

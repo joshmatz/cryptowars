@@ -20,7 +20,7 @@ const GameNavigation = () => {
       label: "Home",
     },
     {
-      href: `/game/characters/${characterId}/jobs`,
+      href: `/game/characters/${characterId}/jobs/0`,
       label: "Jobs",
     },
     {
@@ -42,7 +42,7 @@ const GameNavigation = () => {
   ];
 
   return (
-    <Box display="flex" mb={10}>
+    <Box display="flex" mb={5}>
       <Box>
         {navLinks.map((item) => {
           return (
@@ -72,9 +72,9 @@ const GameTemplate = ({ children, characterId }) => {
       <Head>
         <title>CryptoWars</title>
       </Head>
-      <Container maxW="container.xl" py={4}>
+      <Container maxW="container.xl" pt={5}>
         <Box
-          mb={10}
+          mb={{ base: 2, md: 5 }}
           display="flex"
           justifyContent="space-between"
           alignItems="center"
@@ -86,9 +86,7 @@ const GameTemplate = ({ children, characterId }) => {
               </Text>
             </RouterLink>
           </Box>
-          <Box>
-            <NetworkButtons />
-          </Box>
+          <NetworkButtons />
         </Box>
       </Container>
       <Container maxW="container.xl">

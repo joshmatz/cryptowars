@@ -1,10 +1,8 @@
 import { ethers } from "ethers";
 import { useMemo } from "react";
 import { useWeb3Context } from "../Web3ContextProvider";
-import {
-  PropertiesContractAbi,
-  PropertiesContractAddress,
-} from "../../constants/game";
+import { PropertiesContractAddress } from "../../constants/game";
+import PropertiesContractAbi from "../../constants/contracts/PropertiesContractAbi";
 
 const usePropertyContract = () => {
   const {

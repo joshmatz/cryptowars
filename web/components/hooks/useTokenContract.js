@@ -1,27 +1,27 @@
 import { ethers } from "ethers";
 import { useMemo } from "react";
 import { useWeb3Context } from "../Web3ContextProvider";
-import { JobsContractAddress } from "../../constants/game";
-import JobsContractAbi from "../../constants/contracts/JobsContractAbi";
+import { TokenContractAddress } from "../../constants/game";
+import TokenContractAbi from "../../constants/contracts/TokenContractAbi";
 
-const useJobsContract = () => {
+const useTokenContract = () => {
   const {
     web3State: { signer, isCorrectChain },
   } = useWeb3Context();
 
-  const JobsContract = useMemo(() => {
+  const tokenContract = useMemo(() => {
     if (!signer || !isCorrectChain) {
       return null;
     }
     const _pc = new ethers.Contract(
-      JobsContractAddress,
-      JobsContractAbi,
+      TokenContractAddress,
+      TokenContractAbi,
       signer
     );
     return _pc;
   }, [signer, isCorrectChain]);
 
-  return JobsContract;
+  return tokenContract;
 };
 
-export default useJobsContract;
+export default useTokenContract;

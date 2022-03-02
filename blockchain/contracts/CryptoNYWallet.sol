@@ -24,6 +24,8 @@ interface ICurrency {
         address _to,
         uint256 _amount
     ) external;
+
+    function balanceOf(address _owner) external view returns (uint256);
 }
 
 contract CryptoNYWallet is Ownable {
@@ -70,7 +72,15 @@ contract CryptoNYWallet is Ownable {
     {
         require(amount <= balances[characterId], "CryptoNyWallet.balance");
         balances[characterId] = balances[characterId] - amount;
-        ICurrency(currencyContract).transfer(msg.sender, amount);
+
+        ICurrency(currencyContract).burn(
+            address(this),
+            amount.mul(15).div(100)
+        );
+        ICurrency(currencyContract).transfer(
+            msg.sender,
+            amount.mul(85).div(100)
+        );
     }
 
     function depositToCharacter(uint256 characterId, uint256 amount)

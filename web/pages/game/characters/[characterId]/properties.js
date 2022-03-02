@@ -1,21 +1,24 @@
-import { Box, Button, Icon, Text, Tooltip } from "@chakra-ui/react";
-import { BigNumber, ethers } from "ethers";
+import {
+  Box,
+  Button,
+  Icon,
+  Input,
+  Stack,
+  Text,
+  Tooltip,
+  useToast,
+} from "@chakra-ui/react";
+import { BigNumber } from "ethers";
 import { useRouter } from "next/router";
-import { useMemo, useState } from "react";
-import { useMutation, useQueries } from "react-query";
-import { useWeb3Context } from "../../../../components/Web3ContextProvider";
+import { useRef, useState } from "react";
+import { useMutation } from "react-query";
 import useCharacterProperty from "../../../../components/hooks/useCharacterProperty";
 import usePropertyContract from "../../../../components/hooks/usePropertyContract";
-import usePropertyCount from "../../../../components/hooks/usePropertyCount";
 import usePropertyTypes from "../../../../components/hooks/usePropertyTypes";
 import GameTemplate from "../../../../components/modules/GameTemplate";
-import {
-  PropertiesContractAddress,
-  PropertiesContractAbi,
-  propertyTypeNames,
-} from "../../../../constants/game";
+import { propertyTypeNames } from "../../../../constants/game";
 import { useEffect } from "react/cjs/react.development";
-import { formatDistance, formatDistanceStrict, fromUnixTime } from "date-fns";
+import { formatDistanceStrict, fromUnixTime } from "date-fns";
 import {
   MdOutlineBatteryChargingFull,
   MdBatteryCharging20,
@@ -26,8 +29,15 @@ const calculateUpgradeCost = ({
   costPerLevel,
   cost,
   levels = 1,
-  currentLevel,
+  currentLevel = BigNumber.from(2),
 }) => {
+  // console.log({ currentLevel, cost });
+  // console.log({
+  //   costToUpgrade: cost
+  //     .mul(levels)
+  //     .add(currentLevel.add(levels).div(2).mul(levels).mul(costPerLevel))
+  //     .toString(),
+  // });
   return cost
     .mul(levels)
     .add(currentLevel.add(levels).div(2).mul(levels).mul(costPerLevel));
@@ -65,8 +75,8 @@ const useTimer = (lastCollected, maxCollection) => {
 const Timer = ({ time, percentFull, lastCollected, maxCollection }) => {
   if (time <= 0) {
     return (
-      <Box display="flex" alignItems="center" mr={5}>
-        <Text>100% Capacity</Text>
+      <Box flex="1 0 auto" display="flex" alignItems="center" mr={5}>
+        <Text whiteSpace="nowrap">100% Capacity</Text>
         <Icon as={MdOutlineBatteryChargingFull} w={5} h={5} />
       </Box>
     );
@@ -88,8 +98,9 @@ const Timer = ({ time, percentFull, lastCollected, maxCollection }) => {
 };
 
 const PropertyRow = ({ characterId, propertyTypeIndex }) => {
+  const [upgradesToBuy, setUpgradesToBuy] = useState(1);
   const { data: propertyType } = usePropertyTypes(propertyTypeIndex);
-
+  const toast = useToast();
   const { data: characterProperty, refetch } = useCharacterProperty(
     characterId,
     propertyTypeIndex
@@ -97,13 +108,37 @@ const PropertyRow = ({ characterId, propertyTypeIndex }) => {
 
   const propertiesContract = usePropertyContract();
 
+  const collectionRef = useRef();
+  const purchaseRef = useRef();
+  const upgradeRef = useRef();
+
   const { mutate: purchaseProperty } = useMutation(
     async () => {
       const tx = await propertiesContract.purchaseProperty(
         characterId,
         propertyTypeIndex
       );
-      await tx.wait(1, 0, 0, 60);
+
+      purchaseRef.current = toast({
+        id: `propertyType-${propertyTypeIndex}`,
+        title: "Processing contract...",
+        description: `We need a legal team for ${propertyTypeNames[propertyTypeIndex]}?`,
+        status: "info",
+        duration: null,
+        isClosable: true,
+      });
+
+      await tx.wait(1);
+
+      toast({
+        title: "Contract signed!",
+        description: "Now, back to business.",
+        status: "success",
+        duration: 9000,
+        isClosable: true,
+      });
+
+      toast.close(collectionRef.current);
       return;
     },
     {
@@ -117,7 +152,27 @@ const PropertyRow = ({ characterId, propertyTypeIndex }) => {
         characterId,
         characterProperty?.id
       );
-      await tx.wait(1, 0, 0, 60);
+
+      collectionRef.current = toast({
+        id: `propertyType-${propertyTypeIndex}`,
+        title: "Waiting for transaction...",
+        description: `${propertyTypeNames[propertyTypeIndex]} revenue is on its way.`,
+        status: "info",
+        duration: null,
+        isClosable: true,
+      });
+
+      await tx.wait(1);
+
+      toast({
+        title: "Collection successful!",
+        description: "Now, back to business.",
+        status: "success",
+        duration: 9000,
+        isClosable: true,
+      });
+
+      toast.close(collectionRef.current);
       return;
     },
     {
@@ -133,9 +188,28 @@ const PropertyRow = ({ characterId, propertyTypeIndex }) => {
       const tx = await propertiesContract.upgradeProperty(
         characterId,
         characterProperty?.id,
-        1
+        upgradesToBuy
       );
-      await tx.wait(1, 0, 0, 60);
+      upgradeRef.current = toast({
+        id: `propertyType-${propertyTypeIndex}`,
+        title: "Waiting for transaction...",
+        description: `${propertyTypeNames[propertyTypeIndex]} is undergoing renovations...`,
+        status: "info",
+        duration: null,
+        isClosable: true,
+      });
+
+      await tx.wait(1);
+
+      toast({
+        title: "Renovations complete!",
+        description: "Now, back to business.",
+        status: "success",
+        duration: 9000,
+        isClosable: true,
+      });
+
+      toast.close(upgradeRef.current);
       return;
     },
     {
@@ -152,7 +226,7 @@ const PropertyRow = ({ characterId, propertyTypeIndex }) => {
     return null;
   }
 
-  const bonusCapacityMul = percentFull === 100 ? 11 : 10;
+  const bonusCapacityMul = Math.min(100, percentFull) === 100 ? 11 : 10;
 
   return (
     <Box
@@ -162,36 +236,56 @@ const PropertyRow = ({ characterId, propertyTypeIndex }) => {
       mb="5"
       borderBottom="1px"
       borderColor="gray.700"
+      pb="2"
     >
-      <Box>
+      <Box flex="1 0 50%">
         <Text fontWeight="bold">{propertyTypeNames[propertyTypeIndex]}</Text>
-        <Text>Level {characterProperty.level?.toString() || 0}</Text>
+        <Stack direction="row">
+          <Text>Level {characterProperty.level?.toString() || 0}</Text>
+          {characterProperty.level ? (
+            <>
+              <Text> | </Text>
+              <Timer
+                time={time}
+                percentFull={percentFull}
+                lastCollected={characterProperty.lastCollected}
+                maxCollection={propertyType.maxCollection}
+              />
+            </>
+          ) : null}
+        </Stack>
       </Box>
       {characterProperty.level ? (
-        <Box display="flex">
-          <Timer
-            time={time}
-            percentFull={percentFull}
-            lastCollected={characterProperty.lastCollected}
-            maxCollection={propertyType.maxCollection}
-          />
-
+        <Stack display="flex">
+          <Stack direction="row">
+            {characterProperty.level?.eq(propertyType.maxLevel) ? null : (
+              <Input
+                type="number"
+                value={upgradesToBuy}
+                onChange={(e) => setUpgradesToBuy(e.target.value)}
+              />
+            )}
+            <Button
+              flex="1 0 auto"
+              onClick={upgradeProperty}
+              disabled={characterProperty.level?.eq(propertyType.maxLevel)}
+            >
+              {characterProperty.level?.eq(propertyType.maxLevel)
+                ? "Max Level"
+                : `Upgrade: $${formatNumber(
+                    calculateUpgradeCost({
+                      costPerLevel: propertyType.costPerLevel,
+                      cost: propertyType.cost,
+                      currentLevel: characterProperty.level,
+                    })
+                  )}`}
+            </Button>
+          </Stack>
           <Button
-            onClick={upgradeProperty}
-            mr="2"
-            disabled={characterProperty.level?.eq(propertyType.maxLevel)}
+            flex="1 0 auto"
+            onClick={collectRevenue}
+            colorScheme={bonusCapacityMul === 11 ? "green" : undefined}
           >
-            {characterProperty.level?.eq(propertyType.maxLevel)
-              ? "Max Level"
-              : `Upgrade: $${formatNumber(
-                  calculateUpgradeCost({
-                    costPerLevel: propertyType.costPerLevel,
-                    cost: propertyType.cost,
-                    currentLevel: characterProperty.level,
-                  })
-                )}`}
-          </Button>
-          <Button onClick={collectRevenue}>
             Collect{" "}
             {propertyType?.incomePerLevel &&
             characterProperty?.level &&
@@ -199,14 +293,21 @@ const PropertyRow = ({ characterId, propertyTypeIndex }) => {
               ? `$${formatNumber(
                   propertyType.incomePerLevel
                     .mul(characterProperty.level)
-                    .mul(percentFull)
+                    .mul(Math.min(100, percentFull))
                     .div(100)
-                    .mul(bonusCapacityMul)
-                    .div(10)
-                )}`
+                )}${
+                  percentFull >= 100
+                    ? ` + $${formatNumber(
+                        propertyType.incomePerLevel
+                          .mul(characterProperty.level)
+                          .mul(Math.min(100, percentFull))
+                          .div(1000)
+                      )}`
+                    : ""
+                }`
               : ""}
           </Button>
-        </Box>
+        </Stack>
       ) : (
         <Button onClick={purchaseProperty}>
           Purchase: $

@@ -21,9 +21,46 @@ const theme = extendTheme({
     },
   },
   components: {
+    Input: {
+      sizes: {
+        sm: {
+          field: {
+            borderRadius: "none",
+          },
+          addon: {
+            borderRadius: "none",
+          },
+        },
+        md: {
+          field: {
+            borderRadius: "none",
+          },
+          addon: {
+            borderRadius: "none",
+          },
+        },
+        lg: {
+          field: {
+            borderRadius: "none",
+          },
+          addon: {
+            borderRadius: "none",
+          },
+        },
+        xl: {
+          field: {
+            borderRadius: "none",
+          },
+          addon: {
+            borderRadius: "none",
+          },
+        },
+      },
+    },
     Button: {
       baseStyle: {
         borderRadius: "none",
+        borderBottom: "",
       },
     },
   },

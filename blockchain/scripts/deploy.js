@@ -133,12 +133,20 @@ async function main() {
   transactions.push(await cryptoChar.addGameContract(cryptoNyJobs.address));
 
   for (let i = 0; i < jobTiers.length; i++) {
-    await cryptoNyJobs._createJobTier();
-    for (let j = 0; j < jobTiers[i].jobs.length; j++) {
-      await cryptoNyJobs._createJobType(
-        i,
-        ...jobPropsToArray(jobTiers[i].jobs[j])
-      );
+    try {
+      await cryptoNyJobs._createJobTier();
+      for (let j = 0; j < jobTiers[i].jobs.length; j++) {
+        try {
+          await cryptoNyJobs._createJobType(
+            i,
+            ...jobPropsToArray(jobTiers[i].jobs[j])
+          );
+        } catch (e) {
+          console.log({ i, j, job: jobTiers[i].jobs[j], e });
+        }
+      }
+    } catch (e) {
+      console.log({ i });
     }
   }
 

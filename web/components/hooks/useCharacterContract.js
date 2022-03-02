@@ -1,10 +1,8 @@
 import { ethers } from "ethers";
 import { useMemo } from "react";
 import { useWeb3Context } from "../Web3ContextProvider";
-import {
-  CharacterContractAbi,
-  CharacterContractAddress,
-} from "../../constants/game";
+import { CharacterContractAddress } from "../../constants/game";
+import CharacterContractAbi from "../../constants/contracts/CharacterContractAbi";
 
 const useCharacterContract = () => {
   const {

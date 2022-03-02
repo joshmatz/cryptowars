@@ -39,20 +39,20 @@ describe("cryptoWars.jobs", function () {
   describe("owner", function () {
     describe("permissions", function () {
       it("should not complete for nonexistent token", async () => {
-        await expect(cryptoNyJobs.completeJob(34, 0, 0)).to.be.revertedWith(
+        await expect(cryptoNyJobs.completeJob(34, 0, 0, 1)).to.be.revertedWith(
           "ERC721: owner query for nonexistent token"
         );
       });
 
       it("should not let owner complete a job for a guest character", async () => {
         await expect(
-          cryptoNyJobs.completeJob(guestCharacterId, 0, 0)
+          cryptoNyJobs.completeJob(guestCharacterId, 0, 0, 1)
         ).to.be.revertedWith("CryptoNyJobs.characterOwner");
       });
 
       it("should not complete a tier that is not unlocked", async () => {
         await expect(
-          cryptoNyJobs.completeJob(ownerCharacterId, 1, 0)
+          cryptoNyJobs.completeJob(ownerCharacterId, 1, 0, 1)
         ).to.be.revertedWith("CryptoNyJobs.completeJob.tierLocked");
       });
     });
@@ -70,7 +70,7 @@ describe("cryptoWars.jobs", function () {
         );
 
         previousCharacter = await cryptoChar.characters(ownerCharacterId);
-        await cryptoNyJobs.completeJob(ownerCharacterId, 0, 0);
+        await cryptoNyJobs.completeJob(ownerCharacterId, 0, 0, 1);
         newCharacter = await cryptoChar.characters(ownerCharacterId);
       });
 
@@ -164,7 +164,9 @@ describe("cryptoWars.jobs", function () {
       let newCharacter;
       this.beforeAll(async () => {
         previousCharacter = await cryptoChar.characters(guestCharacterId);
-        await cryptoNyJobs.connect(guest).completeJob(guestCharacterId, 0, 0);
+        await cryptoNyJobs
+          .connect(guest)
+          .completeJob(guestCharacterId, 0, 0, 1);
         newCharacter = await cryptoChar.characters(guestCharacterId);
       });
 
@@ -251,7 +253,7 @@ describe("cryptoWars.jobs", function () {
           (7 - previousCharacter.experience.toNumber()) / experiencePerJob;
 
         for (let i = 0; i < requiredJobsForLevelOne; i++) {
-          await cryptoNyJobs.completeJob(ownerCharacterId, 0, 0);
+          await cryptoNyJobs.completeJob(ownerCharacterId, 0, 0, 1);
         }
 
         jobExperience = await cryptoNyJobs.jobExperience(
@@ -288,11 +290,11 @@ describe("cryptoWars.jobs", function () {
 
     describe("energy requirements", function () {
       it("should use up all energy and then require more", async () => {
-        await cryptoNyJobs.completeJob(ownerCharacterId, 0, 0);
-        await cryptoNyJobs.completeJob(ownerCharacterId, 0, 0);
-        await cryptoNyJobs.completeJob(ownerCharacterId, 0, 0);
+        await cryptoNyJobs.completeJob(ownerCharacterId, 0, 0, 1);
+        await cryptoNyJobs.completeJob(ownerCharacterId, 0, 0, 1);
+        await cryptoNyJobs.completeJob(ownerCharacterId, 0, 0, 1);
         await expect(
-          cryptoNyJobs.completeJob(ownerCharacterId, 0, 0)
+          cryptoNyJobs.completeJob(ownerCharacterId, 0, 0, 1)
         ).to.be.revertedWith("CryptoChar.updateCurrentAttributes.energy");
       });
     });
@@ -330,7 +332,7 @@ describe("cryptoWars.jobs", function () {
           (156.25 - previousCharacter.experience.toNumber()) / experiencePerJob;
 
         for (let i = 0; i < requiredForLevelFive; i++) {
-          await cryptoNyJobs.completeJob(ownerCharacterId, 0, 0);
+          await cryptoNyJobs.completeJob(ownerCharacterId, 0, 0, 1);
           if (i % 9 === 0) {
             await ethers.provider.send("evm_increaseTime", [60 * 50]);
 
@@ -374,7 +376,7 @@ describe("cryptoWars.jobs", function () {
 
     this.beforeAll(async () => {
       previousCharacter = await cryptoChar.characters(ownerCharacterId);
-      await cryptoNyJobs.completeJob(ownerCharacterId, 0, 1);
+      await cryptoNyJobs.completeJob(ownerCharacterId, 0, 1, 1);
       jobExperience = await cryptoNyJobs.jobExperience(ownerCharacterId, 0, 1);
       newCharacter = await cryptoChar.characters(ownerCharacterId);
     });
@@ -459,7 +461,7 @@ describe("cryptoWars.jobs", function () {
       let newCharacter;
       this.beforeAll(async () => {
         for (let i = 0; i < 201; i++) {
-          await cryptoNyJobs.completeJob(ownerCharacterId, 0, 3);
+          await cryptoNyJobs.completeJob(ownerCharacterId, 0, 3, 1);
 
           if (i % 3 === 0) {
             await ethers.provider.send("evm_increaseTime", [60 * 500]);
@@ -502,7 +504,7 @@ describe("cryptoWars.jobs", function () {
       previousCharacter = await cryptoChar.characters(ownerCharacterId);
       for (let i = 0; i < jobTiers[0].jobs.length; i++) {
         for (let j = 0; j < 25; j++) {
-          await cryptoNyJobs.completeJob(ownerCharacterId, 0, i);
+          await cryptoNyJobs.completeJob(ownerCharacterId, 0, i, 1);
           await ethers.provider.send("evm_increaseTime", [60 * 500]);
           await cryptoChar.regenerateEnergy(ownerCharacterId);
         }
@@ -535,7 +537,7 @@ describe("cryptoWars.jobs", function () {
       previousCharacter = await cryptoChar.characters(ownerCharacterId);
       for (let i = 0; i < jobTiers[JOB_TIER].jobs.length; i++) {
         for (let j = 0; j < 25; j++) {
-          await cryptoNyJobs.completeJob(ownerCharacterId, JOB_TIER, i);
+          await cryptoNyJobs.completeJob(ownerCharacterId, JOB_TIER, i, 1);
           await ethers.provider.send("evm_increaseTime", [60 * 500]);
           await cryptoChar.regenerateEnergy(ownerCharacterId);
         }
@@ -556,6 +558,280 @@ describe("cryptoWars.jobs", function () {
 
     it("should have increased characterExperience tier", () => {
       expect(characterJobTier).to.be.equal(2);
+    });
+  });
+
+  describe("multiple job runs", function () {
+    const jobTier = 2;
+    describe("2 runs", function () {
+      let newCharacter;
+      let previousExp;
+      let previousCharacter;
+      let exp;
+      let previousCharacterBalance;
+      let characterBalance;
+      this.beforeAll(async () => {
+        previousExp = await cryptoNyJobs.jobExperience(
+          ownerCharacterId,
+          jobTier,
+          0
+        );
+        previousCharacter = await cryptoChar.characters(ownerCharacterId);
+        previousCharacterBalance = await cryptoNyWallet.balances(
+          ownerCharacterId
+        );
+        await cryptoChar.useSkillPoints(
+          ownerCharacterId,
+          previousCharacter.skillPoints,
+          0,
+          0,
+          0
+        );
+        previousCharacter = await cryptoChar.characters(ownerCharacterId);
+
+        await cryptoNyJobs.completeJob(ownerCharacterId, jobTier, 0, 2);
+
+        exp = await cryptoNyJobs.jobExperience(ownerCharacterId, jobTier, 0);
+
+        newCharacter = await cryptoChar.characters(ownerCharacterId);
+        characterBalance = await cryptoNyWallet.balances(ownerCharacterId);
+      });
+
+      it("should use double energy", () => {
+        expect(newCharacter.energy.current).to.be.equal(
+          previousCharacter.energy.current.sub(
+            jobTiers[jobTier].jobs[0].energy * 2
+          )
+        );
+      });
+
+      it("should double experience for character", () => {
+        expect(newCharacter.experience).to.be.equal(
+          previousCharacter.experience.add(
+            jobTiers[jobTier].jobs[0].experience * 2
+          )
+        );
+      });
+
+      it("should double experience of jobExperience", () => {
+        expect(exp.total).to.be.equal(
+          previousExp.total.add(jobTiers[jobTier].jobs[0].experience * 2)
+        );
+      });
+
+      it("should double payout", () => {
+        expect(characterBalance).to.be.equal(
+          previousCharacterBalance.add(jobTiers[jobTier].jobs[0].payout.mul(2))
+        );
+      });
+    });
+
+    describe("8 runs", function () {
+      const runs = 8;
+      let newCharacter;
+      let previousExp;
+      let previousCharacter;
+      let exp;
+      let previousCharacterBalance;
+      let characterBalance;
+      this.beforeAll(async () => {
+        previousExp = await cryptoNyJobs.jobExperience(
+          ownerCharacterId,
+          jobTier,
+          0
+        );
+        previousCharacter = await cryptoChar.characters(ownerCharacterId);
+        previousCharacterBalance = await cryptoNyWallet.balances(
+          ownerCharacterId
+        );
+
+        await cryptoNyJobs.completeJob(ownerCharacterId, jobTier, 0, runs);
+
+        exp = await cryptoNyJobs.jobExperience(ownerCharacterId, jobTier, 0);
+
+        newCharacter = await cryptoChar.characters(ownerCharacterId);
+        characterBalance = await cryptoNyWallet.balances(ownerCharacterId);
+      });
+
+      it("should use double energy", () => {
+        expect(newCharacter.energy.current).to.be.equal(
+          previousCharacter.energy.current.sub(
+            jobTiers[jobTier].jobs[0].energy * runs
+          )
+        );
+      });
+
+      it("should double experience for character", () => {
+        expect(newCharacter.experience).to.be.equal(
+          previousCharacter.experience.add(
+            jobTiers[jobTier].jobs[0].experience * runs
+          )
+        );
+      });
+
+      it("should double experience of jobExperience", () => {
+        expect(exp.total).to.be.equal(
+          previousExp.total.add(jobTiers[jobTier].jobs[0].experience * runs)
+        );
+      });
+
+      it("should double payout", () => {
+        expect(characterBalance).to.be.equal(
+          previousCharacterBalance.add(
+            jobTiers[jobTier].jobs[0].payout.mul(runs)
+          )
+        );
+      });
+    });
+
+    describe("30 runs without enough energy", function () {
+      it("should fail", async () => {
+        await expect(
+          cryptoNyJobs.completeJob(ownerCharacterId, 2, 1, 30)
+        ).to.be.revertedWith("CryptoChar.updateCurrentAttributes.energy");
+      });
+    });
+
+    describe("30 runs with enough energy", function () {
+      const runs = 20;
+      const jobId = 1;
+      let newCharacter;
+      let previousExp;
+      let previousCharacter;
+      let exp;
+      let previousCharacterBalance;
+      let characterBalance;
+      this.beforeAll(async () => {
+        previousCharacter = await cryptoChar.characters(ownerCharacterId);
+
+        await ethers.provider.send("evm_setNextBlockTimestamp", [
+          previousCharacter.energy.lastCollected.add(60 * 5000).toNumber(),
+        ]);
+
+        await cryptoChar.regenerateEnergy(ownerCharacterId);
+        let completions = 0;
+        let jobsCompleted = 0;
+        do {
+          previousCharacter = await cryptoChar.characters(ownerCharacterId);
+
+          await cryptoNyJobs.completeJob(
+            ownerCharacterId,
+            jobTier,
+            0,
+            previousCharacter.energy.current.div(
+              jobTiers[jobTier].jobs[0].energy
+            )
+          );
+
+          await ethers.provider.send("evm_setNextBlockTimestamp", [
+            previousCharacter.energy.lastCollected.add(60 * 5000).toNumber(),
+          ]);
+          jobsCompleted += previousCharacter.energy.current
+            .div(jobTiers[jobTier].jobs[0].energy)
+            .toNumber();
+
+          await cryptoChar.regenerateEnergy(ownerCharacterId);
+          if (previousCharacter.skillPoints.toNumber()) {
+            if (completions % 10 === 0) {
+              console.log(
+                "level up!",
+                ++completions,
+                "jobs done: ",
+                jobsCompleted
+              );
+            }
+            await cryptoChar.useSkillPoints(
+              ownerCharacterId,
+              previousCharacter.skillPoints,
+              0,
+              0,
+              0
+            );
+          }
+          previousCharacter = await cryptoChar.characters(ownerCharacterId);
+        } while (previousCharacter.energy.current.lt(155));
+        previousCharacter = await cryptoChar.characters(ownerCharacterId);
+
+        await ethers.provider.send("evm_setNextBlockTimestamp", [
+          previousCharacter.energy.lastCollected.add(60 * 500).toNumber(),
+        ]);
+
+        await cryptoChar.regenerateEnergy(ownerCharacterId);
+
+        previousCharacter = await cryptoChar.characters(ownerCharacterId);
+        previousExp = await cryptoNyJobs.jobExperience(
+          ownerCharacterId,
+          jobTier,
+          jobId
+        );
+        previousCharacterBalance = await cryptoNyWallet.balances(
+          ownerCharacterId
+        );
+
+        await cryptoNyJobs.completeJob(ownerCharacterId, jobTier, jobId, runs);
+
+        exp = await cryptoNyJobs.jobExperience(
+          ownerCharacterId,
+          jobTier,
+          jobId
+        );
+
+        newCharacter = await cryptoChar.characters(ownerCharacterId);
+        characterBalance = await cryptoNyWallet.balances(ownerCharacterId);
+      });
+
+      it("should increase skill points twice", () => {
+        expect(newCharacter.skillPoints).to.be.equal(
+          previousCharacter.skillPoints.add(2)
+        );
+      });
+    });
+
+    describe("20 runs with enough energy and prev tier experience", function () {
+      const runs = 20;
+      const jobId = 1;
+      let newCharacter;
+      let previousExp;
+      let previousCharacter;
+      let exp;
+      let previousCharacterBalance;
+      let characterBalance;
+      this.beforeAll(async () => {
+        previousCharacter = await cryptoChar.characters(ownerCharacterId);
+
+        await ethers.provider.send("evm_setNextBlockTimestamp", [
+          previousCharacter.energy.lastCollected.add(60 * 5000).toNumber(),
+        ]);
+
+        await cryptoChar.regenerateEnergy(ownerCharacterId);
+        previousCharacter = await cryptoChar.characters(ownerCharacterId);
+
+        previousExp = await cryptoNyJobs.jobExperience(
+          ownerCharacterId,
+          jobTier,
+          jobId
+        );
+        previousCharacterBalance = await cryptoNyWallet.balances(
+          ownerCharacterId
+        );
+
+        await cryptoNyJobs.completeJob(ownerCharacterId, jobTier, jobId, runs);
+
+        exp = await cryptoNyJobs.jobExperience(
+          ownerCharacterId,
+          jobTier,
+          jobId
+        );
+
+        newCharacter = await cryptoChar.characters(ownerCharacterId);
+        characterBalance = await cryptoNyWallet.balances(ownerCharacterId);
+      });
+
+      it("should increase skill points once to max", () => {
+        expect(newCharacter.skillPoints).to.be.equal(
+          previousCharacter.skillPoints.add(1)
+        );
+      });
     });
   });
 });

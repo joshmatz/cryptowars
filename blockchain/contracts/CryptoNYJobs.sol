@@ -78,12 +78,13 @@ contract CryptoNYJobs is Ownable {
         _;
     }
 
-    // TODO: Complete job multiple times in one transaction.
     function completeJob(
         uint256 characterId,
         uint256 tierId,
-        uint256 jobId
+        uint256 jobId,
+        uint256 runs
     ) external isCharacterOwner(characterId) isCharacterInRegion(characterId) {
+        require(runs > 0, "CryptoNyJobs.completeJob.runs");
         require(tierId < totalTiers, "CryptoNyJobs.completeJob.invalidJobTier");
         require(
             jobId < totalJobsInTier[tierId],
@@ -96,21 +97,28 @@ contract CryptoNYJobs is Ownable {
 
         Job storage job = jobTier[tierId][jobId];
 
-        jobExperience[characterId][tierId][jobId] = JobExperience(
-            jobExperience[characterId][tierId][jobId].total + job.experience,
-            jobExperience[characterId][tierId][jobId].level
-        );
-
         int256 skillPoints = 0;
+        uint256 prevLevel = jobExperience[characterId][tierId][jobId].level;
+        uint256 newExp = jobExperience[characterId][tierId][jobId].total +
+            job.experience.mul(runs);
+        uint256 newLevel = newExp.div(job.experiencePerTier);
+        uint256 levelsGained = newLevel - prevLevel;
+
+        jobExperience[characterId][tierId][jobId].total = newExp;
 
         if (
-            jobExperience[characterId][tierId][jobId].total >=
-            job.experiencePerTier &&
+            levelsGained > 0 &&
             jobExperience[characterId][tierId][jobId].level < MAX_MASTERY
         ) {
-            jobExperience[characterId][tierId][jobId].level++;
-            jobExperience[characterId][tierId][jobId].total = 0;
-            skillPoints++;
+            if (newLevel > MAX_MASTERY) {
+                levelsGained =
+                    MAX_MASTERY -
+                    jobExperience[characterId][tierId][jobId].level;
+            }
+
+            jobExperience[characterId][tierId][jobId].level += levelsGained;
+
+            skillPoints += int256(levelsGained);
 
             if (
                 characterJobTier[characterId] < totalTiers &&
@@ -132,13 +140,13 @@ contract CryptoNYJobs is Ownable {
 
         ICryptoNyWallet(walletContract).mintToCharacter(
             characterId,
-            job.payout
+            job.payout.mul(runs)
         );
         ICharacter(characterContract).updateCurrentAttributes(
             characterId,
-            int256(job.experience),
+            int256(job.experience.mul(runs)),
             0,
-            -int256(job.energy),
+            -int256(job.energy.mul(runs)),
             0,
             skillPoints
         );

@@ -316,16 +316,18 @@ describe("CryptoChar", function () {
   });
 
   describe("cryptoNyWallet", () => {
-    it("should allow owner to withdrawToPlayer", async () => {
+    it("should allow owner to withdrawToPlayer for a 15% fee", async () => {
       ownerCharacterBalance = await cryptoNyWallet.balances(ownerCharacterId);
-      ownerBalance = 0;
+      ownerBalance = BigNumber.from(0);
 
       await cryptoNyWallet
         .connect(owner)
         .withdrawToPlayer(0, ownerCharacterBalance);
       const balanceOfPerson = await cryptoNyERC20.balanceOf(owner.address);
       const balanceOfCharacter = await cryptoNyWallet.balances(0);
-      expect(balanceOfPerson).to.equal(ownerBalance + ownerCharacterBalance);
+      expect(balanceOfPerson).to.equal(
+        ownerBalance.add(ownerCharacterBalance.mul(85).div(100))
+      );
       expect(balanceOfCharacter).to.equal(0);
       ownerBalance = ownerBalance + ownerCharacterBalance;
       ownerCharacterBalance = 0;
@@ -410,7 +412,9 @@ describe("CryptoChar", function () {
           const balanceOfPerson = await cryptoNyERC20.balanceOf(guest.address);
 
           expect(balanceOfPerson).to.equal(
-            startingBalanceOfPerson.add(ethers.utils.parseEther("1"))
+            startingBalanceOfPerson.add(
+              ethers.utils.parseEther("1").mul(85).div(100)
+            )
           );
         });
 

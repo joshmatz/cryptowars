@@ -1,22 +1,28 @@
-import { Box, Text } from "@chakra-ui/react";
-import { ethers } from "ethers";
-import { useRouter } from "next/router";
-import { useWeb3Context } from "../Web3ContextProvider";
+import { Box, Stack, Text } from "@chakra-ui/react";
 import useCharacter from "../hooks/useCharacter";
-import useTokens from "../hooks/useTokens";
+import useCharacterTokens from "../hooks/useCharacterTokens";
 import formatNumber from "../../utils/formatNumber";
 
-const CharacterBar = ({ characterId }) => {
-  const {
-    web3State: { address },
-  } = useWeb3Context();
+const totalExperienceForLevel = (level) => {
+  return 100 * ((level / 4) ^ 2);
+};
 
+const CharacterBar = ({ characterId }) => {
   const { data: character = {} } = useCharacter(characterId);
 
-  const { data: tokens = 0 } = useTokens(characterId);
+  const { data: tokens = 0 } = useCharacterTokens(characterId);
 
   return (
-    <Box display="flex" mb={5} justifyContent="space-between">
+    <Stack
+      display="flex"
+      direction={{ base: "column", md: "row" }}
+      p={4}
+      borderWidth="1px"
+      borderColor="gray.600"
+      borderBottomWidth="4px"
+      mb={5}
+      justifyContent="space-between"
+    >
       <Box mr={2}>
         <Text fontWeight="bold">Name</Text>
         <Text mb={2}>{character.name}</Text>
@@ -26,7 +32,9 @@ const CharacterBar = ({ characterId }) => {
         <Text fontWeight="bold">Level</Text>
         <Text mb={2}>
           {character.level?.toString()}{" "}
-          {character.skillPoints ? `(${character.skillPoints})` : null}
+          {character.skillPoints?.toNumber()
+            ? `(${character.skillPoints} SP)`
+            : null}
         </Text>
       </Box>
 
@@ -71,7 +79,7 @@ const CharacterBar = ({ characterId }) => {
           {character?.defense?.equippedMax?.toString()}
         </Text>
       </Box>
-    </Box>
+    </Stack>
   );
 };
 

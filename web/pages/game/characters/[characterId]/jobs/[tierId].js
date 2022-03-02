@@ -1,128 +1,87 @@
 import {
   Box,
   Button,
-  Circle,
-  Divider,
-  Icon,
-  Link,
+  Input,
   Progress,
-  Square,
   Stack,
   Text,
-  useColorModePreference,
-  useColorModeValue,
+  useToast,
 } from "@chakra-ui/react";
-import { BigNumber, ethers } from "ethers";
+import { BigNumber } from "ethers";
 import { useRouter } from "next/router";
-import { useMutation, useQuery } from "react-query";
+import { useMutation } from "react-query";
 import GameTemplate from "../../../../../components/modules/GameTemplate";
-import { BsCheckCircleFill, BsCheckCircle } from "react-icons/bs";
 
 import jobTiers from "../../../../../constants/jobs";
 import useJobsContract from "../../../../../components/hooks/useJobsContract";
 import useCharacterJobExperience from "../../../../../components/hooks/useCharacterJobExperience";
 import useCharacter from "../../../../../components/hooks/useCharacter";
-import RouterLink from "next/link";
-import { FaCircle } from "react-icons/fa";
-import { AiOutlineCheckSquare, AiFillCheckSquare } from "react-icons/ai";
 import formatNumber from "../../../../../utils/formatNumber";
-const tierNames = ["Bitconnect", "Pincoin", "ACChain", "Savedroid", "PlexCoin"];
-
-const TierTemplate = ({ characterId, tierIndex, selectedIndex }) => {
-  const jobContract = useJobsContract();
-  const { data: unlockedJobTiers } = useQuery(
-    `unlockedJobTiers-${characterId}`,
-    () => jobContract.characterJobTier(characterId),
-    {
-      enabled: !!jobContract,
-    }
-  );
-
-  const jobTierUnlocked = unlockedJobTiers?.toNumber();
-
-  const isUnlocked = jobTierUnlocked > tierIndex;
-  const unlockedColor = useColorModeValue("blue.400", "blue.600");
-  const lockedColor = useColorModeValue("gray.600", "gray.500");
-  const isSelectedIndex = selectedIndex === tierIndex.toString();
-
-  return (
-    <Stack direction="column" flex="1">
-      <Stack direction="row" alignItems="center" spacing={0}>
-        <Divider
-          bg={isUnlocked || isSelectedIndex ? unlockedColor : lockedColor}
-        />
-        <Square
-          sx={{ marginInlineStart: 0 }}
-          size="40px"
-          bg={isUnlocked || isSelectedIndex ? unlockedColor : lockedColor}
-        >
-          <Icon
-            w={5}
-            h={5}
-            as={
-              isSelectedIndex
-                ? FaCircle
-                : isUnlocked
-                ? AiFillCheckSquare
-                : AiOutlineCheckSquare
-            }
-          />
-        </Square>
-        <Divider bg={isUnlocked ? unlockedColor : lockedColor} />
-      </Stack>
-      <Stack alignItems="center">
-        <Text fontWeight={isSelectedIndex ? "bold" : ""}>
-          {isUnlocked ? (
-            <RouterLink
-              passHref
-              href={`/game/characters/${characterId}/jobs/${tierIndex}`}
-            >
-              <Link>{tierNames[tierIndex]}</Link>
-            </RouterLink>
-          ) : (
-            tierNames[tierIndex]
-          )}
-        </Text>
-      </Stack>
-    </Stack>
-  );
-};
-
-const TierList = ({ characterId, children, selectedIndex }) => {
-  return (
-    <Box>
-      <Stack direction={"row"} align="stretch" mb={10} spacing={0}>
-        {jobTiers.map((tier, i) => {
-          return (
-            <TierTemplate
-              selectedIndex={selectedIndex}
-              characterId={characterId}
-              tierIndex={i}
-              key={i}
-            />
-          );
-        })}
-      </Stack>
-      {children}
-    </Box>
-  );
-};
+import { useRef, useState } from "react";
+import JobTierList from "../../../../../components/modules/JobTierList";
 
 // TODO: The first job in tier 0 is not showing mastery progress
 const JobRow = ({ job, tierId, jobIndex, characterId }) => {
   const jobsContract = useJobsContract();
+  const jobRef = useRef();
+  const toast = useToast();
+  const [jobRuns, setJobRuns] = useState(1);
+  const { data: character, refetch: refetchCharacter } =
+    useCharacter(characterId);
 
-  const { data: character } = useCharacter(characterId);
-  const { mutate: completeJob } = useMutation(async () => {
-    const tx = await jobsContract.completeJob(characterId, tierId, jobIndex);
-    await tx.wait(1, 0, 0, 60);
-    return;
-  });
+  const { data: jobExperience, refetch: refetchJobExperience } =
+    useCharacterJobExperience(characterId, tierId, jobIndex);
 
-  const { data: jobExperience } = useCharacterJobExperience(
-    characterId,
-    tierId,
-    jobIndex
+  const { mutate: completeJob, isLoading } = useMutation(
+    async () => {
+      let tx;
+      try {
+        tx = await jobsContract.completeJob(
+          characterId,
+          tierId,
+          jobIndex,
+          jobRuns
+        );
+      } catch (e) {
+        if ((e.code = -32603)) {
+          return;
+        }
+        toast({
+          title: "Error",
+          description: e.data?.message || e.message,
+          status: "error",
+          duration: 9000,
+          isClosable: true,
+        });
+      }
+      jobRef.current = toast({
+        id: `job-${tierId}-${jobIndex}`,
+        title: `${job.name} in progress...`,
+        description: `Get that bag.`,
+        status: "info",
+        duration: null,
+        isClosable: true,
+      });
+
+      await tx.wait(1);
+
+      toast({
+        title: "Job successful!",
+        description: "Now, back to hacking.",
+        status: "success",
+        duration: 9000,
+        isClosable: true,
+      });
+
+      toast.close(jobRef.current);
+      return;
+    },
+    {
+      onSuccess: () => {
+        refetchCharacter();
+        refetchJobExperience();
+      },
+    }
   );
 
   if (!character) {
@@ -132,46 +91,80 @@ const JobRow = ({ job, tierId, jobIndex, characterId }) => {
   return (
     <Box
       display="flex"
-      justifyContent={"space-between"}
-      alignItems="center"
+      flexDirection={{ base: "column", lg: "row" }}
+      justifyContent={{ lg: "space-between" }}
+      alignItems={{ lg: "center" }}
       mb={5}
+      borderBottom="1px"
+      borderColor="gray.700"
+      pb="1"
     >
-      <Box>
+      <Box flex="1 0 50%" mb={{ base: 5, lg: 0 }}>
         <Text fontWeight="bold">{job.name}</Text>
         <Text>
-          {job.energy.toString()} Energy / ${formatNumber(job.payout)} /{" "}
-          {job.experience}XP
+          Use {job.energy.toString()} Energy | Earn ${formatNumber(job.payout)}{" "}
+          + {job.experience}XP
         </Text>
       </Box>
 
-      <Box display="flex" alignItems="center">
+      <Stack
+        flex="1 0 50%"
+        display="flex"
+        alignItems="center"
+        justifyContent={"space-between"}
+        direction={{ base: "column", sm: "row" }}
+      >
         <Box
-          width="300px"
+          flex="1 0 auto"
+          width="50%"
           mr="5"
           opacity={jobExperience?.total?.toNumber() ? 1 : 0.5}
         >
           <Progress
-            size="lg"
-            value={jobExperience?.total
-              .mul(100)
-              .div(job.experiencePerTier)
-              .toNumber()}
+            size="xs"
+            mb={1}
+            value={
+              (100 *
+                Math.round(
+                  jobExperience?.total.toNumber() % job.experiencePerTier
+                )) /
+              job.experiencePerTier
+            }
           />
           <Text>
-            Next mastery:{" "}
-            {jobExperience?.total.toNumber()
-              ? job.experiencePerTier - jobExperience?.total.toNumber()
-              : ""}
+            Mastery: {jobExperience?.level.toNumber()} | Next:{" "}
+            {job.experiencePerTier
+              ? job.experiencePerTier -
+                (jobExperience?.total.toNumber() % job.experiencePerTier)
+              : 0}
             XP
           </Text>
         </Box>
+
+        {character.energy.adjustedCurrent.lt(job.energy) ? null : (
+          <Input
+            type="number"
+            value={jobRuns}
+            onChange={(e) => setJobRuns(e.target.value)}
+          />
+        )}
+
         <Button
-          disabled={character.energy.adjustedCurrent.lt(job.energy)}
+          flex="1 0 auto"
+          disabled={
+            character.energy.adjustedCurrent.lt(job.energy) || isLoading
+          }
           onClick={completeJob}
         >
-          Complete
+          {character.energy.adjustedCurrent.lt(job.energy)
+            ? `${BigNumber.from(job.energy)
+                .sub(character.energy.adjustedCurrent)
+                .toString()} Energy needed`
+            : isLoading
+            ? "..."
+            : "Complete"}
         </Button>
-      </Box>
+      </Stack>
     </Box>
   );
 };
@@ -192,7 +185,10 @@ const JobTierPage = () => {
 
   return (
     <GameTemplate characterId={characterId}>
-      <TierList selectedIndex={tierId}>
+      <Text mb={10}>
+        Master these jobs to move on to bigger and greater things.
+      </Text>
+      <JobTierList selectedIndex={tierId}>
         {jobs.map((job, i) => {
           return (
             <JobRow
@@ -204,7 +200,7 @@ const JobTierPage = () => {
             />
           );
         })}
-      </TierList>
+      </JobTierList>
     </GameTemplate>
   );
 };

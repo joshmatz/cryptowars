@@ -4,7 +4,6 @@ import { useState } from "react";
 import BrowserOnly from "../components/BrowserOnly";
 import dynamic from "next/dynamic";
 import AppTemplate from "../components/modules/AppTemplate";
-import NetworkButtons from "../components/modules/NetworkButtons";
 import theme from "../constants/theme";
 // Attempt to load Torus or other browser-only imports...
 const Web3ContextProvider = dynamic(() =>

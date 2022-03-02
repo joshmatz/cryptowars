@@ -5,6 +5,7 @@ require("@nomiclabs/hardhat-waffle");
 require("hardhat-gas-reporter");
 require("solidity-coverage");
 const { GraphQLClient, gql } = require("graphql-request");
+const { types } = require("hardhat/config");
 
 const graphQLClient = new GraphQLClient(
   `https://api.thegraph.com/subgraphs/name/traderjoe-xyz/lending`,
@@ -20,6 +21,34 @@ task("accounts", "Prints the list of accounts", async (taskArgs, hre) => {
     console.log(account.address);
   }
 });
+
+task("miningMode", "Changes the mining mode of hardhat")
+  .addParam(
+    "automine",
+    "True/false to enable/disable automining",
+    true,
+    types.boolean
+  )
+  .addOptionalParam(
+    "interval",
+    "The interval to set in milliseconds (default 5000)",
+    15000,
+    types.int
+  )
+  .setAction(async ({ automine, interval }, href) => {
+    await network.provider.send("evm_setAutomine", [automine]);
+    console.log({ automine });
+    if (!automine) {
+      console.log("setting interval mining");
+      await network.provider.send("evm_setIntervalMining", [interval]);
+    }
+  });
+
+task("increaseTime", "Increases the time on the network")
+  .addOptionalParam("time", "Time in minutes to increase", 60, types.int)
+  .setAction(async ({ time }) => {
+    await network.provider.send("evm_increaseTime", [time * 60]);
+  });
 
 task("findUnderwater", "Prints the list of accounts", async (taskArgs, hre) => {
   const query = gql`

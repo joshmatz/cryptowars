@@ -24,7 +24,7 @@ const useCharacterJobExperience = (characterId, tierId, jobId) => {
       };
     },
     {
-      enabled: !!jobsContract && !!characterId && !!tierId && !!jobId,
+      enabled: !!jobsContract && !!characterId && !!tierId,
     }
   );
 };

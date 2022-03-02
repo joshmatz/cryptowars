@@ -2,7 +2,7 @@ import { ethers } from "ethers";
 
 const formatNumber = (number, { isWei = true, style = "currency" } = {}) => {
   if (!number) {
-    return null;
+    return "0.00";
   }
 
   let numberToBeFormatted = number;
@@ -19,6 +19,11 @@ const formatNumber = (number, { isWei = true, style = "currency" } = {}) => {
     opts.currency = "USD";
     opts.minimumFractionDigits = 2;
     opts.maximumFractionDigits = 2;
+  }
+
+  if (style === "normal") {
+    opts.minimumFractionDigits = 0;
+    opts.maximumFractionDigits = 0;
   }
 
   return new Intl.NumberFormat("en-US", {

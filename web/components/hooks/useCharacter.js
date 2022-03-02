@@ -96,6 +96,7 @@ const useCharacter = (characterId) => {
       }
 
       return {
+        id: characterId,
         name: _character.name,
         level: _character.level,
         experience: _character.experience,

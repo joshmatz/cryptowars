@@ -37,7 +37,7 @@ const useCharacterProperty = (characterId, propertyTypeIndex) => {
       };
     },
     {
-      enabled: !!propertiesContract,
+      enabled: !!propertiesContract && !!characterId,
     }
   );
 };

@@ -2,7 +2,7 @@ import { useQuery } from "react-query";
 import { useWeb3Context } from "../Web3ContextProvider";
 import useWalletContract from "./useWalletContract";
 
-const useTokens = (characterId) => {
+const useCharacterTokens = (characterId) => {
   const {
     web3State: { address },
   } = useWeb3Context();
@@ -25,4 +25,4 @@ const useTokens = (characterId) => {
   );
 };
 
-export default useTokens;
+export default useCharacterTokens;
