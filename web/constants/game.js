@@ -1,12 +1,12 @@
 export const CharacterContractAddress =
-  "0x5FbDB2315678afecb367f032d93F642f64180aa3";
+  "0x44C7556345a86dFD14df17AB448e56f53Ea0eC32";
 export const WalletContractAddress =
-  "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0";
+  "0x4B040E6cCd6890296C6263E2F4b9aD6ac4A941c2";
 export const PropertiesContractAddress =
-  "0x5FC8d32690cc91D4c39d9d3abcBD16989F875707";
-export const JobsContractAddress = "0x3Aa5ebB10DC797CAC828524e59A333d0A371443c";
+  "0x86596b991Ea00b5D9bECC52a9706E5D4bAa8E57C";
+export const JobsContractAddress = "0xE38a56584A541c7e4Ba4a5dcfC27D4277dAa65FD";
 export const TokenContractAddress =
-  "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512";
+  "0xe8bc9A75472c8069245bC941c56A49feaDACD954";
 
 export const propertyTypeNames = [
   "xTreme Staking",

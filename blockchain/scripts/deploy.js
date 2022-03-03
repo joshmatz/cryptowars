@@ -29,6 +29,145 @@ const jobPropsToArray = (props) => {
   ];
 };
 
+const transactions = [];
+
+const deployCharacterContract = async () => {
+  if (process.env.CHARACTER_CONTRACT_ADDRESS) {
+    console.log("Skipping Character Contract Deployment");
+    return process.env.CHARACTER_CONTRACT_ADDRESS;
+  }
+  const CryptoChar = await ethers.getContractFactory("CryptoChar");
+  const cryptoChar = await CryptoChar.deploy();
+  transactions.push(await cryptoChar.deployed());
+  console.log(`CHARACTER_CONTRACT_ADDRESS=${cryptoChar.address}`);
+
+  return cryptoChar.address;
+};
+
+const deployCryptoNYERC20Contract = async () => {
+  if (process.env.ERC20_CONTRACT_ADDRESS) {
+    console.log("Skipping ERC20 Contract Deployment");
+    return process.env.ERC20_CONTRACT_ADDRESS;
+  }
+
+  const CryptoNYERC20 = await ethers.getContractFactory("CryptoNYERC20");
+  const cryptoNyERC20 = await CryptoNYERC20.deploy();
+  transactions.push(await cryptoNyERC20.deployed());
+  console.log(`ERC20_CONTRACT_ADDRESS=${cryptoNyERC20.address}`);
+  return cryptoNyERC20.address;
+};
+
+const deployCryptoNYWallet = async (characterAddress, ERC20Address) => {
+  if (process.env.WALLET_CONTRACT_ADDRESS) {
+    console.log("Skipping Wallet Deployment");
+    return process.env.WALLET_CONTRACT_ADDRESS;
+  }
+  const CryptoNYWallet = await ethers.getContractFactory("CryptoNYWallet");
+  const cryptoNyWallet = await CryptoNYWallet.deploy(
+    characterAddress,
+    ERC20Address
+  );
+
+  const cryptoNyERC20Contract = await ethers.getContractAt(
+    "CryptoNYERC20",
+    ERC20Address
+  );
+
+  transactions.push(await cryptoNyWallet.deployed());
+  console.log(`WALLET_CONTRACT_ADDRESS=${cryptoNyWallet.address}`);
+
+  transactions.push(
+    await cryptoNyERC20Contract.transferOwnership(cryptoNyWallet.address)
+  );
+  console.log("Wallet Ownership Transferred");
+
+  transactions.push(
+    await cryptoNyERC20Contract.approve(
+      cryptoNyWallet.address,
+      ethers.constants.MaxUint256
+    )
+  );
+  console.log("Contract approved");
+
+  return cryptoNyWallet.address;
+};
+
+const deployCryptoPropertiesContract = async (
+  characterAddress,
+  walletAddress
+) => {
+  if (process.env.PROPERTIES_CONTRACT_ADDRESS) {
+    console.log("Skipping Properties Deployment");
+    return process.env.PROPERTIES_CONTRACT_ADDRESS;
+  }
+  const CryptoNYProperties = await ethers.getContractFactory(
+    "CryptoNYProperties"
+  );
+  const cryptoNyProperties = await CryptoNYProperties.deploy(characterAddress);
+  transactions.push(await cryptoNyProperties.deployed());
+  console.log(`PROPERTIES_CONTRACT_ADDRESS=${cryptoNyProperties.address}`);
+
+  const characterContract = await ethers.getContractAt(
+    "CryptoChar",
+    characterAddress
+  );
+  transactions.push(
+    await characterContract._addRegion(
+      0,
+      60 * 60 * 9,
+      cryptoNyProperties.address
+    )
+  );
+  console.log("Region Added");
+
+  transactions.push(await cryptoNyProperties.setWalletContract(walletAddress));
+  console.log("Wallet approved in Properties");
+
+  const walletContract = await ethers.getContractAt(
+    "CryptoNYWallet",
+    walletAddress
+  );
+  transactions.push(
+    await walletContract.addGameContract(cryptoNyProperties.address)
+  );
+  console.log("Properties approved in Wallet");
+
+  return cryptoNyProperties.address;
+};
+
+const deployJobsContract = async (characterAddress, walletAddress) => {
+  if (process.env.JOBS_CONTRACT_ADDRESS) {
+    console.log("Skipping Jobs Deployment");
+    return process.env.JOBS_CONTRACT_ADDRESS;
+  }
+  const CryptoNYJobs = await ethers.getContractFactory("CryptoNYJobs");
+
+  const cryptoNyJobs = await CryptoNYJobs.deploy(
+    characterAddress,
+    walletAddress
+  );
+  transactions.push(await cryptoNyJobs.deployed());
+  console.log(`JOBS_CONTRACT_ADDRESS=${cryptoNyJobs.address}`);
+
+  const walletContract = await ethers.getContractAt(
+    "CryptoNYWallet",
+    walletAddress
+  );
+  transactions.push(await walletContract.addGameContract(cryptoNyJobs.address));
+  console.log("Jobs approved in Wallet");
+
+  const characterContract = await ethers.getContractAt(
+    "CryptoChar",
+    characterAddress
+  );
+  transactions.push(
+    await characterContract.addGameContract(cryptoNyJobs.address)
+  );
+  console.log("Jobs approved in CryptoChar");
+
+  return cryptoNyJobs.address;
+};
+
 async function main() {
   let cryptoChar;
   let owner;
@@ -45,108 +184,99 @@ async function main() {
   // manually to make sure everything is compiled
   // await hre.run('compile');
 
-  const transactions = [];
   const signers = await ethers.getSigners();
   owner = signers[0];
   guest = signers[1];
 
-  const CryptoChar = await ethers.getContractFactory("CryptoChar");
-  cryptoChar = await CryptoChar.deploy();
-  transactions.push(await cryptoChar.deployed());
+  let characterAddress;
+  let ERC20Address;
+  let walletAddress;
+  let propertiesAddress;
+  let jobsAddress;
 
-  /**
-   * Set up token
-   */
-  const CryptoNYERC20 = await ethers.getContractFactory("CryptoNYERC20");
-  cryptoNyERC20 = await CryptoNYERC20.deploy();
-  transactions.push(await cryptoNyERC20.deployed());
+  characterAddress = await deployCharacterContract();
+  ERC20Address = await deployCryptoNYERC20Contract();
+  walletAddress = await deployCryptoNYWallet(characterAddress, ERC20Address);
+  propertiesAddress = await deployCryptoPropertiesContract(
+    characterAddress,
+    walletAddress
+  );
+  jobsAddress = await deployJobsContract(characterAddress, walletAddress);
 
+  console.log({
+    characterAddress,
+    ERC20Address,
+    walletAddress,
+    propertiesAddress,
+    jobsAddress,
+  });
   /**
    * Set up wallet
    */
-  const CryptoNYWallet = await ethers.getContractFactory("CryptoNYWallet");
-  cryptoNyWallet = await CryptoNYWallet.deploy(
-    cryptoChar.address,
-    cryptoNyERC20.address
-  );
 
-  transactions.push(await cryptoNyWallet.deployed());
-
-  transactions.push(
-    await cryptoNyERC20.transferOwnership(cryptoNyWallet.address)
-  );
-
-  transactions.push(
-    await cryptoNyERC20.approve(
-      cryptoNyWallet.address,
-      ethers.constants.MaxUint256
-    )
-  );
-
-  transactions.push(
-    await cryptoNyERC20
-      .connect(guest)
-      .approve(cryptoNyWallet.address, ethers.constants.MaxUint256)
-  );
+  // if (guest) {
+  //   console.log("guest");
+  //   const c = await ethers.getContractAt("CryptoNYERC20", ERC20Address);
+  //   transactions.push(
+  //     await c.connect(guest).approve(walletAddress, ethers.constants.MaxUint256)
+  //   );
+  //   console.log("guest approval complete");
+  // }
 
   /**
    * Set up Properties
    */
-  const CryptoNYProperties = await ethers.getContractFactory(
-    "CryptoNYProperties"
-  );
-  cryptoNyProperties = await CryptoNYProperties.deploy(cryptoChar.address);
-  transactions.push(await cryptoNyProperties.deployed());
+  // let startingProperty = process.env.STARTING_PROPERTY || 0;
 
-  transactions.push(
-    await cryptoChar._addRegion(0, 60 * 60 * 9, cryptoNyProperties.address)
-  );
+  // if (typeof startingProperty === "number") {
+  // propertiesContract = await ethers.getContractAt(
+  //   "CryptoNYProperties",
+  //   propertiesAddress
+  // );
+  // for (let i = startingProperty; i < propertyTypes.length; i++) {
+  //   transactions.push(
+  //     await propertiesContract._createPropertyType(
+  //       ...propertyTypePropsToArray(propertyTypes[i])
+  //     )
+  //   );
+  //   console.log(`Property ${i} Type Created`);
+  // }
 
-  transactions.push(
-    await cryptoNyProperties.setWalletContract(cryptoNyWallet.address)
-  );
-
-  transactions.push(
-    await cryptoNyWallet.addGameContract(cryptoNyProperties.address)
-  );
-
-  for (let i = 0; i < propertyTypes.length; i++) {
-    transactions.push(
-      await cryptoNyProperties._createPropertyType(
-        ...propertyTypePropsToArray(propertyTypes[i])
-      )
-    );
-  }
+  // console.log("Properties completed");
 
   /**
    * Set up jobs
    */
 
-  const CryptoNYJobs = await ethers.getContractFactory("CryptoNYJobs");
+  let startingTier = process.env.STARTING_TIER || 0;
 
-  cryptoNyJobs = await CryptoNYJobs.deploy(
-    cryptoChar.address,
-    cryptoNyWallet.address
-  );
-
-  transactions.push(await cryptoNyWallet.addGameContract(cryptoNyJobs.address));
-  transactions.push(await cryptoChar.addGameContract(cryptoNyJobs.address));
-
-  for (let i = 0; i < jobTiers.length; i++) {
+  const jobsContract = await ethers.getContractAt("CryptoNYJobs", jobsAddress);
+  for (let i = startingTier; i < jobTiers.length; i++) {
     try {
-      await cryptoNyJobs._createJobTier();
-      for (let j = 0; j < jobTiers[i].jobs.length; j++) {
-        try {
-          await cryptoNyJobs._createJobType(
-            i,
-            ...jobPropsToArray(jobTiers[i].jobs[j])
-          );
-        } catch (e) {
-          console.log({ i, j, job: jobTiers[i].jobs[j], e });
-        }
-      }
+      await jobsContract._createJobTier();
+      console.log(`Tier ${i} Created`);
     } catch (e) {
-      console.log({ i });
+      console.log(e, { i });
+      break;
+    }
+  }
+
+  let startingJob = process.env.STARTING_JOB || 0;
+  startingTier = process.env.STARTING_JOB_TIER || 0;
+  for (let i = startingTier; i < jobTiers.length; i++) {
+    for (let j = startingJob; j < jobTiers[i].jobs.length; j++) {
+      startingJob = 0;
+
+      try {
+        await jobsContract._createJobType(
+          i,
+          ...jobPropsToArray(jobTiers[i].jobs[j])
+        );
+        console.log(`Job Tier ${i} Job ${j} Created`);
+      } catch (e) {
+        console.log({ i, j, job: jobTiers[i].jobs[j], e });
+        break;
+      }
     }
   }
 
@@ -163,21 +293,13 @@ async function main() {
   }
 
   console.log("Gas to deploy: ", gastotal.toString());
+  console.log(`export const CharacterContractAddress = "${characterAddress}";`);
+  console.log(`export const WalletContractAddress = "${walletAddress}";`);
   console.log(
-    `export const CharacterContractAddress = "${cryptoChar.address}";`
+    `export const PropertiesContractAddress = "${propertiesAddress}";`
   );
-  console.log(
-    `export const WalletContractAddress = "${cryptoNyWallet.address}";`
-  );
-  console.log(
-    `export const PropertiesContractAddress = "${cryptoNyProperties.address}";`
-  );
-  console.log(`export const JobsContractAddress = "${cryptoNyJobs.address}";`);
-  console.log(
-    `export const TokenContractAddress = "${cryptoNyERC20.address}";`
-  );
-
-  await cryptoNyERC20.connect(owner);
+  console.log(`export const JobsContractAddress = "${jobsAddress}";`);
+  console.log(`export const TokenContractAddress = "${ERC20Address}";`);
 
   return {
     owner,
