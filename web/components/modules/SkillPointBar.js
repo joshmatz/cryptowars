@@ -14,7 +14,7 @@ import {
 import formatNumber from "../../utils/formatNumber";
 import { useMutation } from "react-query";
 import useCharacterContract from "../../components/hooks/useCharacterContract";
-import { useRef, useState } from "react";
+import React, { useRef, useState } from "react";
 import { AiFillPlusSquare } from "react-icons/ai";
 
 const StatControl = ({ keyValue, label, state, setState }) => {

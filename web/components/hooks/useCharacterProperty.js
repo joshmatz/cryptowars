@@ -1,4 +1,4 @@
-import { useQuery } from "react-query";
+import React, { useQuery } from "react-query";
 import usePropertyContract from "./usePropertyContract";
 
 const useCharacterProperty = (characterId, propertyTypeIndex) => {

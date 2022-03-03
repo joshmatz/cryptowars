@@ -10,7 +10,7 @@ import {
 } from "@chakra-ui/react";
 import { BigNumber } from "ethers";
 import { useRouter } from "next/router";
-import { useRef, useState } from "react";
+import React, { useRef, useState } from "react";
 import { useMutation } from "react-query";
 import useCharacterProperty from "../../../../components/hooks/useCharacterProperty";
 import usePropertyContract from "../../../../components/hooks/usePropertyContract";
