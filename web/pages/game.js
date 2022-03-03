@@ -1,7 +1,6 @@
 import {
   Box,
   Button,
-  Link,
   Table,
   Tbody,
   Td,
@@ -10,17 +9,17 @@ import {
   Thead,
   Tr,
 } from "@chakra-ui/react";
-import axios from "axios";
-import { BigNumber, ethers, Signer } from "ethers";
+import { BigNumber, ethers } from "ethers";
 import RouterLink from "next/link";
 import { useMutation, useQuery } from "react-query";
-import NetworkButtons from "../components/modules/NetworkButtons";
 import GameTemplate from "../components/modules/GameTemplate";
 import { useWeb3Context } from "../components/Web3ContextProvider";
 import { CharacterContractAddress } from "../constants/game";
 import useCharacter from "../components/hooks/useCharacter";
 import useCharacterTokens from "../components/hooks/useCharacterTokens";
 import CharacterContractAbi from "../constants/contracts/CharacterContractAbi";
+import useContractMutation from "../components/hooks/useContractMutation";
+import Error from "next/error";
 const SimpleCharacterBar = ({ characterId }) => {
   const { data: character } = useCharacter(characterId);
   const { data: tokens } = useCharacterTokens(characterId);
@@ -109,16 +108,28 @@ const CharacterView = () => {
     return characters;
   });
 
-  const { mutate: createCharacter } = useMutation(
-    async () => {
+  const { mutate: createCharacter } = useContractMutation(
+    () => {
+      const name = prompt("Name your character -- you cannot change this.");
+      if (!name) {
+        throw new Error("Cancelled");
+      }
       const characterContract = new ethers.Contract(
         CharacterContractAddress,
         CharacterContractAbi,
         signer
       );
-      const character = await characterContract.create("test", 0);
-      await character.wait(1, 0, 0, 60);
-      return character;
+      return characterContract.create(name, 0);
+    },
+    {
+      notificationSuccess: {
+        title: "Excellent work.",
+        description: "Now, down to business.",
+      },
+      notificationProgress: {
+        title: "Creating character...",
+        description: "This will be my most beautiful work.",
+      },
     },
     {
       onSuccess: refetch,
