@@ -62,7 +62,7 @@ const useTimer = (lastCollected, maxCollection) => {
 
   useEffect(() => {
     setTime(lastCollected?.add(maxCollection) - new Date().getTime() / 1000);
-  }, [lastCollected]);
+  }, [lastCollected, maxCollection]);
 
   return {
     time,

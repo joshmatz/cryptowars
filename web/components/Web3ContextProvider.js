@@ -78,43 +78,47 @@ const Web3ContextProvider = ({ children }) => {
     }
   };
 
-  useEffect(async () => {
-    const wallet = await detectEthereumProvider();
-    if (wallet) {
-      let connected = true;
+  useEffect(() => {
+    const doThing = async () => {
+      const wallet = await detectEthereumProvider();
+      if (wallet) {
+        let connected = true;
 
-      const provider = new ethers.providers.Web3Provider(wallet);
+        const provider = new ethers.providers.Web3Provider(wallet);
 
-      const signer = provider.getSigner();
+        const signer = provider.getSigner();
 
-      let address = "";
-      try {
-        address = await signer.getAddress();
-      } catch (e) {
-        connected = false;
+        let address = "";
+        try {
+          address = await signer.getAddress();
+        } catch (e) {
+          connected = false;
+        }
+
+        const network = await provider.getNetwork();
+
+        let isCorrectChain = true;
+        if (network.chainId !== DEPLOYED_CHAIN) {
+          isCorrectChain = false;
+        }
+
+        dispatch({
+          type: "walletAvailable",
+          payload: {
+            provider,
+            signer,
+            address,
+            network,
+            connected,
+            wallet,
+            isCorrectChain,
+            isInitializing: false,
+          },
+        });
       }
 
-      const network = await provider.getNetwork();
-
-      let isCorrectChain = true;
-      if (network.chainId !== DEPLOYED_CHAIN) {
-        isCorrectChain = false;
-      }
-
-      dispatch({
-        type: "walletAvailable",
-        payload: {
-          provider,
-          signer,
-          address,
-          network,
-          connected,
-          wallet,
-          isCorrectChain,
-          isInitializing: false,
-        },
-      });
-    }
+      doThing();
+    };
   }, []);
 
   useEffect(() => {
@@ -166,7 +170,7 @@ const Web3ContextProvider = ({ children }) => {
     return () => {
       state.provider?.removeAllListeners();
     };
-  }, [state.provider]);
+  }, [state.provider, state.wallet]);
 
   return (
     <Web3Context.Provider value={{ web3State: state, connect }}>

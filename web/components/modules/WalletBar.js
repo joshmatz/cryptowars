@@ -167,7 +167,9 @@ const WalletBar = ({ character, refetchCharacter }) => {
       </ButtonGroup>
 
       <InputGroup mb={5}>
-        <InputLeftElement pointerEvents="none" children={<Text>$</Text>} />
+        <InputLeftElement pointerEvents="none">
+          <Text>$</Text>
+        </InputLeftElement>
         <Input
           type="number"
           placeholder="Amount"

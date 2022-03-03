@@ -80,7 +80,7 @@ const GameTemplate = ({ children, characterId }) => {
           alignItems="center"
         >
           <Box display="flex" alignItems="center">
-            <RouterLink href="/">
+            <RouterLink href="/" passHref>
               <Text fontSize="3xl" fontFamily={"heading"} mr={2}>
                 CryptoWars
               </Text>

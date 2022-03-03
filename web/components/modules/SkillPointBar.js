@@ -67,7 +67,7 @@ const SkillPointBar = ({ character, refetchCharacter }) => {
   const characterContract = useCharacterContract();
   const skillPointsRef = useRef();
   const toast = useToast();
-  const { mutate: useSkillPoints, isLoading } = useMutation(
+  const { mutate: modifySkillPoints, isLoading } = useMutation(
     async () => {
       const tx = await characterContract.useSkillPoints(
         character.id,
@@ -127,7 +127,7 @@ const SkillPointBar = ({ character, refetchCharacter }) => {
       as="form"
       onSubmit={(e) => {
         e.preventDefault();
-        useSkillPoints();
+        modifySkillPoints();
       }}
       p={5}
       borderWidth="1px"

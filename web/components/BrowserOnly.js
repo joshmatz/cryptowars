@@ -6,7 +6,7 @@ const BrowserOnly = ({ children }) => {
     if (!mounted) {
       setMounted(true);
     }
-  }, []);
+  }, [mounted]);
   return mounted ? children : null;
 };
 
