@@ -1,5 +1,5 @@
 import { ethers } from "ethers";
-import { useMemo } from "react";
+import React, { useMemo } from "react";
 import { useWeb3Context } from "../Web3ContextProvider";
 import { CharacterContractAddress } from "../../constants/game";
 import CharacterContractAbi from "../../constants/contracts/CharacterContractAbi";
