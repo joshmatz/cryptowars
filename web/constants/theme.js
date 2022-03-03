@@ -2,6 +2,10 @@ import { extendTheme } from "@chakra-ui/react";
 import { mode } from "@chakra-ui/theme-tools";
 
 const theme = extendTheme({
+  config: {
+    initialColorMode: "dark",
+    useSystemColorMode: true,
+  },
   fonts: {
     body: "Space Mono, system-ui, sans-serif",
     heading: "VT323, system-ui, sans-serif",
