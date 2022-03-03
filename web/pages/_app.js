@@ -1,6 +1,6 @@
 import { ChakraProvider } from "@chakra-ui/react";
 import { Hydrate, QueryClient, QueryClientProvider } from "react-query";
-import React, { useState } from "react";
+import { useState } from "react";
 import BrowserOnly from "../components/BrowserOnly";
 import dynamic from "next/dynamic";
 import AppTemplate from "../components/modules/AppTemplate";

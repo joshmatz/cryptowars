@@ -13,7 +13,7 @@ import {
   useToast,
 } from "@chakra-ui/react";
 import { BigNumber, ethers } from "ethers";
-import React, { useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { BiPhone } from "react-icons/bi";
 import { useMutation, useQuery } from "react-query";
 import formatNumber from "../../utils/formatNumber";

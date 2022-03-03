@@ -1,5 +1,5 @@
 import { useToast } from "@chakra-ui/react";
-import React, { useRef } from "react";
+import { useRef } from "react";
 import { useMutation } from "react-query";
 import { useState } from "react/cjs/react.development";
 

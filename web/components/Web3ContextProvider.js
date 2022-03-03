@@ -1,5 +1,5 @@
 import { ethers } from "ethers";
-import React, { createContext, useContext, useEffect, useReducer } from "react";
+import { createContext, useContext, useEffect, useReducer } from "react";
 import detectEthereumProvider from "@metamask/detect-provider";
 
 const Web3Context = createContext();
