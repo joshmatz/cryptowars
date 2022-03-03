@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useQuery } from "react-query";
 import { useWeb3Context } from "../Web3ContextProvider";
 import useCharacterContract from "./useCharacterContract";
