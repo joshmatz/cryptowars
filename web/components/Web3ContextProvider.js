@@ -1,12 +1,5 @@
 import { ethers } from "ethers";
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useReducer,
-  useState,
-} from "react";
+import { createContext, useContext, useEffect, useReducer } from "react";
 import detectEthereumProvider from "@metamask/detect-provider";
 
 const Web3Context = createContext();
@@ -19,7 +12,7 @@ const initialState = {
   provider: null,
 };
 
-const DEPLOYED_CHAIN = 1337;
+const DEPLOYED_CHAIN = process.env.NEXT_PUBLIC_NETWORK_ID;
 
 const reducer = (state, action) => {
   switch (action.type) {
@@ -116,9 +109,8 @@ const Web3ContextProvider = ({ children }) => {
           },
         });
       }
-
-      doThing();
     };
+    doThing();
   }, []);
 
   useEffect(() => {

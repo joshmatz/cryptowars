@@ -32,7 +32,9 @@ function ChainCheckModal() {
           <ModalBody>
             <Box p={5} textAlign="center">
               <Text mb={5}>{message}</Text>
-              <Button onClick={connect}>{action} to Hardhat</Button>
+              <Button onClick={connect}>
+                {action} to {process.env.NEXT_PUBLIC_NETWORK_NAME}
+              </Button>
             </Box>
           </ModalBody>
         </ModalContent>
