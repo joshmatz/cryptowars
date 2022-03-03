@@ -1,8 +1,8 @@
 import { Box, Button, Stack, Text } from "@chakra-ui/react";
 import { useWeb3Context } from "../Web3ContextProvider";
 
-const HOSTED_NETWORK = 1337;
-const NETWORK_NAME = "Hardhat";
+const HOSTED_NETWORK = parseInt(process.env.NEXT_PUBLIC_NETWORK_ID, 10);
+const NETWORK_NAME = process.env.NEXT_PUBLIC_NETWORK_NAME;
 
 var truncate = function (fullStr, strLen, separator) {
   if (fullStr.length <= strLen) return fullStr;

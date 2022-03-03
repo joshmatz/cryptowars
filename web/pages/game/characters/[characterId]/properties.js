@@ -6,12 +6,10 @@ import {
   Stack,
   Text,
   Tooltip,
-  useToast,
 } from "@chakra-ui/react";
 import { BigNumber } from "ethers";
 import { useRouter } from "next/router";
-import { useRef, useState } from "react";
-import { useMutation } from "react-query";
+import { useState } from "react";
 import useCharacterProperty from "../../../../components/hooks/useCharacterProperty";
 import usePropertyContract from "../../../../components/hooks/usePropertyContract";
 import usePropertyTypes from "../../../../components/hooks/usePropertyTypes";
@@ -32,13 +30,6 @@ const calculateUpgradeCost = ({
   levels = 1,
   currentLevel = BigNumber.from(2),
 }) => {
-  // console.log({ currentLevel, cost });
-  // console.log({
-  //   costToUpgrade: cost
-  //     .mul(levels)
-  //     .add(currentLevel.add(levels).div(2).mul(levels).mul(costPerLevel))
-  //     .toString(),
-  // });
   return cost
     .mul(levels)
     .add(currentLevel.add(levels).div(2).mul(levels).mul(costPerLevel));
@@ -115,7 +106,7 @@ const PropertyRow = ({ characterId, propertyTypeIndex }) => {
         title: "Contract signed!",
         description: "Now, back to business.",
       },
-      noticationProgress: {
+      notificationProgress: {
         title: "Processing contract...",
         description: `We need a legal team for ${propertyTypeNames[propertyTypeIndex]}?`,
       },

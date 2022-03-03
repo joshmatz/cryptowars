@@ -12,7 +12,7 @@ const initialState = {
   provider: null,
 };
 
-const DEPLOYED_CHAIN = process.env.NEXT_PUBLIC_NETWORK_ID;
+const DEPLOYED_CHAIN = parseInt(process.env.NEXT_PUBLIC_NETWORK_ID, 10);
 
 const reducer = (state, action) => {
   switch (action.type) {
