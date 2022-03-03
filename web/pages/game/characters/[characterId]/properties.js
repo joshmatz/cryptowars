@@ -24,6 +24,7 @@ import {
   MdBatteryCharging20,
 } from "react-icons/md";
 import formatNumber from "../../../../utils/formatNumber";
+import useContractMutation from "../../../../components/hooks/useContractMutation";
 
 const calculateUpgradeCost = ({
   costPerLevel,
@@ -100,7 +101,6 @@ const Timer = ({ time, percentFull, lastCollected, maxCollection }) => {
 const PropertyRow = ({ characterId, propertyTypeIndex }) => {
   const [upgradesToBuy, setUpgradesToBuy] = useState(1);
   const { data: propertyType } = usePropertyTypes(propertyTypeIndex);
-  const toast = useToast();
   const { data: characterProperty, refetch } = useCharacterProperty(
     characterId,
     propertyTypeIndex
@@ -108,109 +108,58 @@ const PropertyRow = ({ characterId, propertyTypeIndex }) => {
 
   const propertiesContract = usePropertyContract();
 
-  const collectionRef = useRef();
-  const purchaseRef = useRef();
-  const upgradeRef = useRef();
-
-  const { mutate: purchaseProperty } = useMutation(
-    async () => {
-      const tx = await propertiesContract.purchaseProperty(
-        characterId,
-        propertyTypeIndex
-      );
-
-      purchaseRef.current = toast({
-        id: `propertyType-${propertyTypeIndex}`,
-        title: "Processing contract...",
-        description: `We need a legal team for ${propertyTypeNames[propertyTypeIndex]}?`,
-        status: "info",
-        duration: null,
-        isClosable: true,
-      });
-
-      await tx.wait(1);
-
-      toast({
+  const { mutate: purchaseProperty } = useContractMutation(
+    () => propertiesContract.purchaseProperty(characterId, propertyTypeIndex),
+    {
+      notificationSuccess: {
         title: "Contract signed!",
         description: "Now, back to business.",
-        status: "success",
-        duration: 9000,
-        isClosable: true,
-      });
-
-      toast.close(collectionRef.current);
-      return;
+      },
+      noticationProgress: {
+        title: "Processing contract...",
+        description: `We need a legal team for ${propertyTypeNames[propertyTypeIndex]}?`,
+      },
     },
     {
       onSuccess: refetch,
     }
   );
 
-  const { mutate: collectRevenue } = useMutation(
-    async () => {
-      const tx = await propertiesContract.collectRevenue(
-        characterId,
-        characterProperty?.id
-      );
-
-      collectionRef.current = toast({
-        id: `propertyType-${propertyTypeIndex}`,
-        title: "Waiting for transaction...",
-        description: `${propertyTypeNames[propertyTypeIndex]} revenue is on its way.`,
-        status: "info",
-        duration: null,
-        isClosable: true,
-      });
-
-      await tx.wait(1);
-
-      toast({
+  const { mutate: collectRevenue } = useContractMutation(
+    () => propertiesContract.collectRevenue(characterId, characterProperty?.id),
+    {
+      notificationSuccess: {
         title: "Collection successful!",
         description: "Now, back to business.",
-        status: "success",
-        duration: 9000,
-        isClosable: true,
-      });
-
-      toast.close(collectionRef.current);
-      return;
+      },
+      notificationProgress: {
+        title: "Waiting for transaction...",
+        description: `${propertyTypeNames[propertyTypeIndex]} revenue is on its way.`,
+      },
     },
     {
       onSuccess: () => {
-        console.log("refetching", { propertyTypeIndex });
         refetch();
       },
     }
   );
 
-  const { mutate: upgradeProperty } = useMutation(
-    async () => {
-      const tx = await propertiesContract.upgradeProperty(
+  const { mutate: upgradeProperty } = useContractMutation(
+    () =>
+      propertiesContract.upgradeProperty(
         characterId,
         characterProperty?.id,
         upgradesToBuy
-      );
-      upgradeRef.current = toast({
-        id: `propertyType-${propertyTypeIndex}`,
-        title: "Waiting for transaction...",
-        description: `${propertyTypeNames[propertyTypeIndex]} is undergoing renovations...`,
-        status: "info",
-        duration: null,
-        isClosable: true,
-      });
-
-      await tx.wait(1);
-
-      toast({
+      ),
+    {
+      notificationSuccess: {
         title: "Renovations complete!",
         description: "Now, back to business.",
-        status: "success",
-        duration: 9000,
-        isClosable: true,
-      });
-
-      toast.close(upgradeRef.current);
-      return;
+      },
+      noticationProgress: {
+        title: "Waiting for transaction...",
+        description: `${propertyTypeNames[propertyTypeIndex]} is undergoing renovations...`,
+      },
     },
     {
       onSuccess: refetch,

@@ -19,8 +19,8 @@ import useCharacter from "../../../../../components/hooks/useCharacter";
 import formatNumber from "../../../../../utils/formatNumber";
 import { useRef, useState } from "react";
 import JobTierList from "../../../../../components/modules/JobTierList";
+import useContractMutation from "../../../../../components/hooks/useContractMutation";
 
-// TODO: The first job in tier 0 is not showing mastery progress
 const JobRow = ({ job, tierId, jobIndex, characterId }) => {
   const jobsContract = useJobsContract();
   const jobRef = useRef();
@@ -32,49 +32,17 @@ const JobRow = ({ job, tierId, jobIndex, characterId }) => {
   const { data: jobExperience, refetch: refetchJobExperience } =
     useCharacterJobExperience(characterId, tierId, jobIndex);
 
-  const { mutate: completeJob, isLoading } = useMutation(
-    async () => {
-      let tx;
-      try {
-        tx = await jobsContract.completeJob(
-          characterId,
-          tierId,
-          jobIndex,
-          jobRuns
-        );
-      } catch (e) {
-        if ((e.code = -32603)) {
-          return;
-        }
-        toast({
-          title: "Error",
-          description: e.data?.message || e.message,
-          status: "error",
-          duration: 9000,
-          isClosable: true,
-        });
-      }
-      jobRef.current = toast({
-        id: `job-${tierId}-${jobIndex}`,
+  const { mutate: completeJob, isLoading } = useContractMutation(
+    () => jobsContract.completeJob(characterId, tierId, jobIndex, jobRuns),
+    {
+      notificationProgress: {
         title: `${job.name} in progress...`,
         description: `Get that bag.`,
-        status: "info",
-        duration: null,
-        isClosable: true,
-      });
-
-      await tx.wait(1);
-
-      toast({
+      },
+      notificationSuccess: {
         title: "Job successful!",
         description: "Now, back to hacking.",
-        status: "success",
-        duration: 9000,
-        isClosable: true,
-      });
-
-      toast.close(jobRef.current);
-      return;
+      },
     },
     {
       onSuccess: () => {

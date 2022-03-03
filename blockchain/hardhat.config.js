@@ -4,16 +4,26 @@ require("@nomiclabs/hardhat-etherscan");
 require("@nomiclabs/hardhat-waffle");
 require("hardhat-gas-reporter");
 require("solidity-coverage");
-const { GraphQLClient, gql } = require("graphql-request");
 const { types } = require("hardhat/config");
 
-const graphQLClient = new GraphQLClient(
-  `https://api.thegraph.com/subgraphs/name/traderjoe-xyz/lending`,
-  {}
-);
+// When using the hardhat network, you may choose to fork Fuji or Avalanche Mainnet
+// This will allow you to debug contracts using the hardhat network while keeping the current network state
+// To enable forking, turn one of these booleans on, and then run your tasks/scripts using ``--network hardhat``
+// For more information go to the hardhat guide
+// https://hardhat.org/hardhat-network/
+// https://hardhat.org/guides/mainnet-forking.html
+const FORK_FUJI = false;
+const FORK_MAINNET = false;
+const forkingData = FORK_FUJI
+  ? {
+      url: "https://api.avax-test.network/ext/bc/C/rpc",
+    }
+  : FORK_MAINNET
+  ? {
+      url: "https://api.avax.network/ext/bc/C/rpc",
+    }
+  : undefined;
 
-// This is a sample Hardhat task. To learn how to create your own go to
-// https://hardhat.org/guides/create-task.html
 task("accounts", "Prints the list of accounts", async (taskArgs, hre) => {
   const accounts = await hre.ethers.getSigners();
 
@@ -50,110 +60,6 @@ task("increaseTime", "Increases the time on the network")
     await network.provider.send("evm_increaseTime", [time * 60]);
   });
 
-task("findUnderwater", "Prints the list of accounts", async (taskArgs, hre) => {
-  const query = gql`
-    {
-      accounts(where: { totalBorrowValueInUSD_gt: 1 }) {
-        id
-        health
-        totalBorrowValueInUSD
-        totalCollateralValueInUSD
-        tokens {
-          id
-          enteredMarket
-          symbol
-          jTokenBalance
-
-          market {
-            exchangeRate
-            underlyingPriceUSD
-          }
-          storedBorrowBalance
-          totalUnderlyingSupplied
-          totalUnderlyingRedeemed
-          totalUnderlyingBorrowed
-          totalUnderlyingRepaid
-          supplyBalanceUnderlying
-        }
-      }
-    }
-  `;
-
-  const data = await graphQLClient.request(query);
-  const accounts = [];
-  data.accounts.forEach((account) => {
-    const debt = {
-      cumulativeBorrowValue: 0,
-      cumulativeCollateralValue: 0,
-      debtTokens: [],
-      collateralTokens: [],
-    };
-
-    //
-    // jTokenStats.storedBorrowBalance = event.params.accountBorrows
-    // .toBigDecimal()
-    // .div(exponentToBigDecimal(market.underlyingDecimals))
-    // .truncate(market.underlyingDecimals)
-    //
-
-    // jTokenStatsTo.jTokenBalance.plus(
-    //   event.params.amount
-    //     .toBigDecimal()
-    //     .div(jTokenDecimalsBD)
-    //     .truncate(jTokenDecimals),
-    // )
-
-    account.tokens.forEach((token) => {
-      const borrowBalanceUSD =
-        token.storedBorrowBalance * token.market.underlyingPriceUSD;
-      const collateralUSD =
-        token.supplyBalanceUnderlying * token.market.underlyingPriceUSD;
-      if (borrowBalanceUSD) {
-        debt.cumulativeBorrowValue += borrowBalanceUSD;
-        debt.debtTokens.push(token);
-      }
-
-      if (token.supplyBalanceUnderlying > 0 && token.enteredMarket) {
-        debt.collateralTokens.push(token);
-        debt.cumulativeCollateralValue += collateralUSD;
-      }
-    });
-
-    // if (debt.cumulativeCollateralValue < debt.cumulativeBorrowValue) {
-    accounts.push({
-      // account: {
-      //   health: account.health,
-      //   id: account.id,
-      //   totalBorrowValueInUSD: account.totalBorrowValueInUSD,
-      //   totalCollateralValueInUSD: account.totalCollateralValueInUSD,
-      // },
-      address: account.id,
-      collateralValue: debt.cumulativeCollateralValue.toLocaleString(),
-      debtValue: debt.cumulativeBorrowValue.toLocaleString(),
-      ratio: debt.cumulativeCollateralValue / debt.cumulativeBorrowValue,
-      revenue: debt.cumulativeCollateralValue * 0.08,
-    });
-    // }
-  });
-
-  console.log(
-    JSON.stringify(
-      accounts.sort((a, b) => {
-        if (a.ratio > b.ratio) {
-          return -1;
-        }
-        // if (a.account.totalBorrowValueInUSD > b.account.totalBorrowValueInUSD) {
-        //   return 1;
-        // }
-
-        return 1;
-      }),
-      undefined,
-      2
-    )
-  );
-});
-
 // You need to export an object to set up your config
 // Go to https://hardhat.org/config/ to learn more
 
@@ -182,6 +88,18 @@ module.exports = {
       url: process.env.ROPSTEN_URL || "",
       accounts:
         process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
+    },
+    fuji: {
+      url: "https://api.avax-test.network/ext/bc/C/rpc",
+      gasPrice: 225000000000,
+      chainId: 43113,
+      accounts: [],
+    },
+    mainnet: {
+      url: "https://api.avax.network/ext/bc/C/rpc",
+      gasPrice: 225000000000,
+      chainId: 43114,
+      accounts: [],
     },
   },
   gasReporter: {

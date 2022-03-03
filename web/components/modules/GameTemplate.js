@@ -96,7 +96,7 @@ const GameTemplate = ({ children, characterId }) => {
             <GameNavigation characterId={characterId} />
           </>
         ) : null}
-        <Box>{children}</Box>
+        <Box mb={10}>{children}</Box>
       </Container>
       <ChainCheckModal />
     </>
