@@ -1,7 +1,6 @@
 import { useToast } from "@chakra-ui/react";
-import { useRef } from "react";
+import { useState, useRef } from "react";
 import { useMutation } from "react-query";
-import { useState } from "react/cjs/react.development";
 
 const useContractMutation = (
   transactionFunction,
