@@ -36,7 +36,7 @@ const useContractMutation = (
       duration: null,
       isClosable: true,
     });
-    await tx.wait(1);
+    await tx.wait(10);
     toast.close(ref.current);
     toast({
       title: notificationSuccess.title,
