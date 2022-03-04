@@ -19,7 +19,7 @@ import useCharacter from "../components/hooks/useCharacter";
 import useCharacterTokens from "../components/hooks/useCharacterTokens";
 import CharacterContractAbi from "../constants/contracts/CharacterContractAbi";
 import useContractMutation from "../components/hooks/useContractMutation";
-import Error from "next/error";
+
 const SimpleCharacterBar = ({ characterId }) => {
   const { data: character } = useCharacter(characterId);
   const { data: tokens } = useCharacterTokens(characterId);
