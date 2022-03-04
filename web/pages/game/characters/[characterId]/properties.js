@@ -9,13 +9,12 @@ import {
 } from "@chakra-ui/react";
 import { BigNumber } from "ethers";
 import { useRouter } from "next/router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import useCharacterProperty from "../../../../components/hooks/useCharacterProperty";
 import usePropertyContract from "../../../../components/hooks/usePropertyContract";
 import usePropertyTypes from "../../../../components/hooks/usePropertyTypes";
 import GameTemplate from "../../../../components/modules/GameTemplate";
 import { propertyTypeNames } from "../../../../constants/game";
-import { useEffect } from "react/cjs/react.development";
 import { formatDistanceStrict, fromUnixTime } from "date-fns";
 import {
   MdOutlineBatteryChargingFull,
