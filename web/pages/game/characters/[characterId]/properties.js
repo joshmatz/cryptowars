@@ -22,70 +22,20 @@ import {
 } from "react-icons/md";
 import formatNumber from "../../../../utils/formatNumber";
 import useContractMutation from "../../../../components/hooks/useContractMutation";
+import useCharacter from "../../../../components/hooks/useCharacter";
+import useCharacterTokens from "../../../../components/hooks/useCharacterTokens";
+import useTimer from "../../../../components/hooks/useTimer";
+import PropertyTimer from "../../../../components/modules/PropertyTimer";
 
 const calculateUpgradeCost = ({
   costPerLevel,
   cost,
   levels = 1,
-  currentLevel = BigNumber.from(2),
+  currentLevel = BigNumber.from(1),
 }) => {
   return cost
     .mul(levels)
-    .add(currentLevel.add(levels).div(2).mul(levels).mul(costPerLevel));
-};
-
-const useTimer = (lastCollected, maxCollection) => {
-  const [time, setTime] = useState(
-    lastCollected?.add(maxCollection) - new Date().getTime() / 1000
-  );
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setTime(time - 1);
-
-      if (time <= 0) {
-        clearInterval(interval);
-      }
-    }, 1000);
-    return () => clearInterval(interval);
-  }, [time]);
-
-  useEffect(() => {
-    setTime(lastCollected?.add(maxCollection) - new Date().getTime() / 1000);
-  }, [lastCollected, maxCollection]);
-
-  return {
-    time,
-    percentFull: Math.max(
-      0,
-      Math.round((100 * (maxCollection - time)) / maxCollection)
-    ),
-  };
-};
-
-const Timer = ({ time, percentFull, lastCollected, maxCollection }) => {
-  if (time <= 0) {
-    return (
-      <Box flex="1 0 auto" display="flex" alignItems="center" mr={5}>
-        <Text whiteSpace="nowrap">100% Capacity</Text>
-        <Icon as={MdOutlineBatteryChargingFull} w={5} h={5} />
-      </Box>
-    );
-  }
-
-  return (
-    <Tooltip
-      label={`${formatDistanceStrict(
-        fromUnixTime(new Date().getTime() / 1000),
-        fromUnixTime(lastCollected.add(maxCollection).toNumber())
-      )} to go`}
-    >
-      <Box display="flex" alignItems="center" mr={5}>
-        <Text mr={2}>{percentFull}% Capacity</Text>
-        {time !== 0 ? <Icon as={MdBatteryCharging20} w={5} h={5} /> : null}
-      </Box>
-    </Tooltip>
-  );
+    .add(currentLevel.add(1).add(levels).div(2).mul(levels).mul(costPerLevel));
 };
 
 const PropertyRow = ({ characterId, propertyTypeIndex }) => {
@@ -96,6 +46,8 @@ const PropertyRow = ({ characterId, propertyTypeIndex }) => {
     propertyTypeIndex
   );
 
+  const { data: tokens = 0, refetch: refetchTokens } =
+    useCharacterTokens(characterId);
   const propertiesContract = usePropertyContract();
 
   const { mutate: purchaseProperty } = useContractMutation(
@@ -111,7 +63,10 @@ const PropertyRow = ({ characterId, propertyTypeIndex }) => {
       },
     },
     {
-      onSuccess: refetch,
+      onSuccess: () => {
+        refetch();
+        refetchTokens();
+      },
     }
   );
 
@@ -130,6 +85,7 @@ const PropertyRow = ({ characterId, propertyTypeIndex }) => {
     {
       onSuccess: () => {
         refetch();
+        refetchTokens();
       },
     }
   );
@@ -146,13 +102,16 @@ const PropertyRow = ({ characterId, propertyTypeIndex }) => {
         title: "Renovations complete!",
         description: "Now, back to business.",
       },
-      noticationProgress: {
+      notificationProgress: {
         title: "Waiting for transaction...",
         description: `${propertyTypeNames[propertyTypeIndex]} is undergoing renovations...`,
       },
     },
     {
-      onSuccess: refetch,
+      onSuccess: () => {
+        refetch();
+        refetchTokens();
+      },
     }
   );
 
@@ -167,6 +126,13 @@ const PropertyRow = ({ characterId, propertyTypeIndex }) => {
 
   const bonusCapacityMul = Math.min(100, percentFull) === 100 ? 11 : 10;
 
+  const isCapableOfPurchasing = propertyType?.cost.lte(tokens);
+  const isCapableOfUpgrading = calculateUpgradeCost({
+    costPerLevel: propertyType?.costPerLevel,
+    cost: propertyType?.cost,
+    currentLevel: characterProperty?.level,
+  }).lte(tokens);
+
   return (
     <Box
       display="flex"
@@ -180,15 +146,23 @@ const PropertyRow = ({ characterId, propertyTypeIndex }) => {
       <Box flex="1 0 50%">
         <Text fontWeight="bold">{propertyTypeNames[propertyTypeIndex]}</Text>
         <Stack direction="row">
-          <Text>Level {characterProperty.level?.toString() || 0}</Text>
+          <Text>
+            Level {characterProperty.level?.toString() || 0} | $
+            {formatNumber(
+              propertyType?.incomePerLevel?.mul(characterProperty.level || 1)
+            )}
+            /{(propertyType?.maxCollection || 0) / 60 / 60}h
+          </Text>
           {characterProperty.level ? (
             <>
               <Text> | </Text>
-              <Timer
+              <PropertyTimer
                 time={time}
                 percentFull={percentFull}
                 lastCollected={characterProperty.lastCollected}
                 maxCollection={propertyType.maxCollection}
+                incomeCapacity={propertyType.incomePerLevel}
+                levels={characterProperty.level}
               />
             </>
           ) : null}
@@ -197,7 +171,8 @@ const PropertyRow = ({ characterId, propertyTypeIndex }) => {
       {characterProperty.level ? (
         <Stack display="flex">
           <Stack direction="row">
-            {characterProperty.level?.eq(propertyType.maxLevel) ? null : (
+            {!isCapableOfUpgrading ||
+            characterProperty.level?.eq(propertyType.maxLevel) ? null : (
               <Input
                 type="number"
                 value={upgradesToBuy}
@@ -207,7 +182,10 @@ const PropertyRow = ({ characterId, propertyTypeIndex }) => {
             <Button
               flex="1 0 auto"
               onClick={upgradeProperty}
-              disabled={characterProperty.level?.eq(propertyType.maxLevel)}
+              disabled={
+                !isCapableOfUpgrading ||
+                characterProperty.level?.eq(propertyType.maxLevel)
+              }
             >
               {characterProperty.level?.eq(propertyType.maxLevel)
                 ? "Max Level"
@@ -248,7 +226,7 @@ const PropertyRow = ({ characterId, propertyTypeIndex }) => {
           </Button>
         </Stack>
       ) : (
-        <Button onClick={purchaseProperty}>
+        <Button onClick={purchaseProperty} disabled={!isCapableOfPurchasing}>
           Purchase: $
           {propertyType?.cost ? formatNumber(propertyType.cost) : null}
         </Button>

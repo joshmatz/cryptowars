@@ -38,7 +38,6 @@ contract CryptoChar is ERC721, ERC721Enumerable, Ownable {
         Attribute health;
         Attribute energy;
         Attribute stamina;
-        // fighter > brain > charm > fighter
         Attribute attack;
         Attribute defense;
         uint256 skillPoints;
@@ -50,6 +49,9 @@ contract CryptoChar is ERC721, ERC721Enumerable, Ownable {
         uint256 baseTravelTime;
     }
 
+    // TODO: This mapping should be by region so only when the character
+    // is in the specific region can items be modified.
+    // Maybe make an exception for the currency contract? :shrug:
     // Map region index to region's management contract
     // Separate contract management allows for future logic expansion
     address[] public regionProperties;

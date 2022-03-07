@@ -1,15 +1,6 @@
-import {
-  Box,
-  Button,
-  Input,
-  Progress,
-  Stack,
-  Text,
-  useToast,
-} from "@chakra-ui/react";
+import { Box, Button, Input, Progress, Stack, Text } from "@chakra-ui/react";
 import { BigNumber } from "ethers";
 import { useRouter } from "next/router";
-import { useMutation } from "react-query";
 import GameTemplate from "../../../../../components/modules/GameTemplate";
 
 import jobTiers from "../../../../../constants/jobs";
@@ -17,20 +8,22 @@ import useJobsContract from "../../../../../components/hooks/useJobsContract";
 import useCharacterJobExperience from "../../../../../components/hooks/useCharacterJobExperience";
 import useCharacter from "../../../../../components/hooks/useCharacter";
 import formatNumber from "../../../../../utils/formatNumber";
-import { useRef, useState } from "react";
+import { useState } from "react";
 import JobTierList from "../../../../../components/modules/JobTierList";
 import useContractMutation from "../../../../../components/hooks/useContractMutation";
+import useCharacterTokens from "../../../../../components/hooks/useCharacterTokens";
 
 const JobRow = ({ job, tierId, jobIndex, characterId }) => {
   const jobsContract = useJobsContract();
-  const jobRef = useRef();
-  const toast = useToast();
   const [jobRuns, setJobRuns] = useState(1);
   const { data: character, refetch: refetchCharacter } =
     useCharacter(characterId);
 
   const { data: jobExperience, refetch: refetchJobExperience } =
     useCharacterJobExperience(characterId, tierId, jobIndex);
+
+  const { data: tokens, refetch: refetchTokens } =
+    useCharacterTokens(characterId);
 
   const { mutate: completeJob, isLoading } = useContractMutation(
     () => jobsContract.completeJob(characterId, tierId, jobIndex, jobRuns),
@@ -48,6 +41,7 @@ const JobRow = ({ job, tierId, jobIndex, characterId }) => {
       onSuccess: () => {
         refetchCharacter();
         refetchJobExperience();
+        refetchTokens();
       },
     }
   );
@@ -86,27 +80,33 @@ const JobRow = ({ job, tierId, jobIndex, characterId }) => {
           flex="1 0 auto"
           width="50%"
           mr="5"
-          opacity={jobExperience?.total?.toNumber() ? 1 : 0.5}
+          // opacity={jobExperience?.total?.toNumber() ? 1 : 0.5}
         >
-          <Progress
-            size="xs"
-            mb={1}
-            value={
-              (100 *
-                Math.round(
-                  jobExperience?.total.toNumber() % job.experiencePerTier
-                )) /
-              job.experiencePerTier
-            }
-          />
-          <Text>
-            Mastery: {jobExperience?.level.toNumber()} | Next:{" "}
-            {job.experiencePerTier
-              ? job.experiencePerTier -
-                (jobExperience?.total.toNumber() % job.experiencePerTier)
-              : 0}
-            XP
-          </Text>
+          {jobExperience?.level.toNumber() === 3 ? (
+            <Text>Mastery 3 Reached</Text>
+          ) : (
+            <>
+              <Progress
+                size="xs"
+                mb={1}
+                value={
+                  (100 *
+                    Math.round(
+                      jobExperience?.total.toNumber() % job.experiencePerTier
+                    )) /
+                  job.experiencePerTier
+                }
+              />
+              <Text>
+                Mastery: {jobExperience?.level.toNumber()} | Next:{" "}
+                {job.experiencePerTier
+                  ? job.experiencePerTier -
+                    (jobExperience?.total.toNumber() % job.experiencePerTier)
+                  : 0}
+                XP
+              </Text>
+            </>
+          )}
         </Box>
 
         {character.energy.adjustedCurrent.lt(job.energy) ? null : (
@@ -120,12 +120,13 @@ const JobRow = ({ job, tierId, jobIndex, characterId }) => {
         <Button
           flex="1 0 auto"
           disabled={
-            character.energy.adjustedCurrent.lt(job.energy) || isLoading
+            character.energy.adjustedCurrent.lt(job.energy * jobRuns) ||
+            isLoading
           }
           onClick={completeJob}
         >
-          {character.energy.adjustedCurrent.lt(job.energy)
-            ? `${BigNumber.from(job.energy)
+          {character.energy.adjustedCurrent.lt(job.energy * jobRuns)
+            ? `${BigNumber.from(job.energy * jobRuns)
                 .sub(character.energy.adjustedCurrent)
                 .toString()} Energy needed`
             : isLoading

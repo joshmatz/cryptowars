@@ -9,6 +9,7 @@ const { ethers } = require("hardhat");
 const { BigNumber } = require("ethers");
 const { jobTiers } = require("../test/utils/jobs");
 const { propertyTypes } = require("../test/utils/properties");
+const { itemTypes } = require("../test/utils/items");
 
 const propertyTypePropsToArray = (props) => {
   return [
@@ -27,6 +28,10 @@ const jobPropsToArray = (props) => {
     props.experience,
     props.experiencePerTier,
   ];
+};
+
+const itemTypePropsToArray = (props) => {
+  return [props.class, props.attack, props.defense, props.rarity];
 };
 
 const transactions = [];
@@ -168,7 +173,33 @@ const deployJobsContract = async (characterAddress, walletAddress) => {
   return cryptoNyJobs.address;
 };
 
-async function main() {
+const deployItemContract = async (characterAddress) => {
+  if (process.env.ITEM_CONTRACT_ADDRESS) {
+    console.log("Skipping Item Deployment");
+    return process.env.ITEM_CONTRACT_ADDRESS;
+  }
+  const CryptoNYItem = await ethers.getContractFactory("CryptoNYItems");
+  const itemContract = await CryptoNYItem.deploy(characterAddress);
+  transactions.push(await itemContract.deployed());
+  console.log(`ITEM_CONTRACT_ADDRESS=${itemContract.address}`);
+
+  const characterContract = await ethers.getContractAt(
+    "CryptoChar",
+    characterAddress
+  );
+  transactions.push(
+    await characterContract.addGameContract(itemContract.address)
+  );
+  console.log("Item approved in CryptoChar");
+
+  return itemContract.address;
+};
+
+async function main({
+  setProperties = true,
+  setItems = true,
+  setJobs = true,
+} = {}) {
   let cryptoChar;
   let owner;
   let guest;
@@ -193,6 +224,7 @@ async function main() {
   let walletAddress;
   let propertiesAddress;
   let jobsAddress;
+  let itemsAddress;
 
   characterAddress = await deployCharacterContract();
   ERC20Address = await deployCryptoNYERC20Contract();
@@ -202,14 +234,8 @@ async function main() {
     walletAddress
   );
   jobsAddress = await deployJobsContract(characterAddress, walletAddress);
+  itemsAddress = await deployItemContract(characterAddress, walletAddress);
 
-  console.log({
-    characterAddress,
-    ERC20Address,
-    walletAddress,
-    propertiesAddress,
-    jobsAddress,
-  });
   /**
    * Set up wallet
    */
@@ -226,56 +252,96 @@ async function main() {
   /**
    * Set up Properties
    */
-  // let startingProperty = process.env.STARTING_PROPERTY || 0;
+  if (setProperties) {
+    propertiesContract = await ethers.getContractAt(
+      "CryptoNYProperties",
+      propertiesAddress
+    );
+    const startingProperty = 0;
+    for (
+      let propertyId = startingProperty;
+      propertyId < propertyTypes.length;
+      propertyId++
+    ) {
+      transactions.push(
+        await propertiesContract._createPropertyType(
+          propertyId,
+          ...propertyTypePropsToArray(propertyTypes[propertyId])
+        )
+      );
+      console.log(`Property ${propertyId} Type Created`);
+    }
 
-  // if (typeof startingProperty === "number") {
-  // propertiesContract = await ethers.getContractAt(
-  //   "CryptoNYProperties",
-  //   propertiesAddress
-  // );
-  // for (let i = startingProperty; i < propertyTypes.length; i++) {
-  //   transactions.push(
-  //     await propertiesContract._createPropertyType(
-  //       ...propertyTypePropsToArray(propertyTypes[i])
-  //     )
-  //   );
-  //   console.log(`Property ${i} Type Created`);
-  // }
-
-  // console.log("Properties completed");
+    console.log("Properties completed");
+  }
 
   /**
    * Set up jobs
    */
 
-  let startingTier = process.env.STARTING_TIER || 0;
+  if (setJobs) {
+    let startingTier = 0;
 
-  const jobsContract = await ethers.getContractAt("CryptoNYJobs", jobsAddress);
-  for (let i = startingTier; i < jobTiers.length; i++) {
-    try {
-      await jobsContract._createJobTier();
-      console.log(`Tier ${i} Created`);
-    } catch (e) {
-      console.log(e, { i });
-      break;
+    const jobsContract = await ethers.getContractAt(
+      "CryptoNYJobs",
+      jobsAddress
+    );
+    transactions.push(await jobsContract._createJobTiers(jobTiers.length));
+    console.log("Jobs Tier Created");
+
+    let startingJob = 0;
+    startingTier = 0;
+    for (let tierId = startingTier; tierId < jobTiers.length; tierId++) {
+      for (
+        let jobId = startingJob;
+        jobId < jobTiers[tierId].jobs.length;
+        jobId++
+      ) {
+        let isJobPublished = false;
+
+        const job = await jobsContract.jobTier(tierId, jobId);
+
+        if (job.energy.toNumber()) {
+          isJobPublished = true;
+        }
+        try {
+          if (!isJobPublished) {
+            await jobsContract._setJobType(
+              tierId,
+              jobId,
+              ...jobPropsToArray(jobTiers[tierId].jobs[jobId])
+            );
+            console.log(`Job Tier ${tierId} Job ${jobId} Created`);
+          } else {
+            console.log(`Job Tier ${tierId} Job ${jobId} Already Published`);
+          }
+        } catch (e) {
+          console.log({ tierId, jobId, job: jobTiers[tierId].jobs[jobId], e });
+          break;
+        }
+      }
     }
   }
 
-  let startingJob = process.env.STARTING_JOB || 0;
-  startingTier = process.env.STARTING_JOB_TIER || 0;
-  for (let i = startingTier; i < jobTiers.length; i++) {
-    for (let j = startingJob; j < jobTiers[i].jobs.length; j++) {
-      startingJob = 0;
+  if (setItems) {
+    const itemsContract = await ethers.getContractAt(
+      "CryptoNYItems",
+      itemsAddress
+    );
 
-      try {
-        await jobsContract._createJobType(
-          i,
-          ...jobPropsToArray(jobTiers[i].jobs[j])
+    // createItemTypes
+    for (let itemTypeId = 0; itemTypeId < itemTypes.length; itemTypeId++) {
+      const itemType = await itemsContract.itemTypes(itemTypeId);
+      if (itemType.class === 0) {
+        transactions.push(
+          await itemsContract._createItemType(
+            itemTypeId,
+            ...itemTypePropsToArray(itemTypes[itemTypeId])
+          )
         );
-        console.log(`Job Tier ${i} Job ${j} Created`);
-      } catch (e) {
-        console.log({ i, j, job: jobTiers[i].jobs[j], e });
-        break;
+        console.log(`Item Type ${itemTypeId} Created`);
+      } else {
+        console.log(`Item Type ${itemTypeId} Already Published`);
       }
     }
   }
@@ -289,38 +355,39 @@ async function main() {
       transactions[i].deployTransaction?.hash || transactions[i].hash
     );
     // Use https://www.cryptoneur.xyz/gas-fees-calculator to look up cost to deploy
-    gastotal = gastotal.add(receipt.gasUsed);
+    gastotal = gastotal.add(receipt?.gasUsed || 0);
   }
 
   console.log("Gas to deploy: ", gastotal.toString());
-  console.log(`export const CharacterContractAddress = "${characterAddress}";`);
-  console.log(`export const WalletContractAddress = "${walletAddress}";`);
-  console.log(
-    `export const PropertiesContractAddress = "${propertiesAddress}";`
-  );
-  console.log(`export const JobsContractAddress = "${jobsAddress}";`);
-  console.log(`export const TokenContractAddress = "${ERC20Address}";`);
+
+  console.log(`NEXT_PUBLIC_CHARACTER_CONTRACT_ADDRESS=${characterAddress}`);
+  console.log(`NEXT_PUBLIC_WALLET_CONTRACT_ADDRESS=${walletAddress}`);
+  console.log(`NEXT_PUBLIC_PROPERTIES_CONTRACT_ADDRESS=${propertiesAddress}`);
+  console.log(`NEXT_PUBLIC_JOBS_CONTRACT_ADDRESS=${jobsAddress}`);
+  console.log(`NEXT_PUBLIC_ERC20_CONTRACT_ADDRESS=${ERC20Address}`);
+  console.log(`NEXT_PUBLIC_ITEMS_CONTRACT_ADDRESS=${itemsAddress}`);
 
   return {
     owner,
     guest,
-    cryptoChar,
-    cryptoNyProperties,
-    cryptoNyERC20,
-    cryptoNyWallet,
-    cryptoNyJobs,
+    characterAddress,
+    walletAddress,
+    propertiesAddress,
+    jobsAddress,
+    ERC20Address,
+    itemsAddress,
     propertyTypes,
   };
 }
 
 // We recommend this pattern to be able to use async/await everywhere
 // and properly handle errors.
-const deployPromise = main()
-  .then(() => {})
-  .catch((error) => {
-    console.error(error);
-    process.exitCode = 1;
-  });
+// const deployPromise = main()
+//   .then(() => {})
+//   .catch((error) => {
+//     console.error(error);
+//     process.exitCode = 1;
+//   });
 
 module.exports = {
   // deployPromise,

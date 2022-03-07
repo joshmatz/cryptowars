@@ -38,9 +38,9 @@ contract CryptoNYJobs is Ownable {
         uint256 level;
     }
 
-    uint256 public totalTiers;
+    uint256 public totalTiers = 0;
     mapping(uint256 => uint256) public totalJobsInTier;
-    mapping(uint256 => Job[]) public jobTier;
+    mapping(uint256 => mapping(uint256 => Job)) public jobTier;
 
     // characterJobTier[characterId] == tierUnlocked]
     mapping(uint256 => uint256) public characterJobTier;
@@ -154,23 +154,39 @@ contract CryptoNYJobs is Ownable {
         // TODO: Mint items
     }
 
-    function _createJobTier() external onlyOwner {
-        uint256 tier = totalTiers;
-        totalTiers++;
-        totalJobsInTier[tier] = 0;
+    function _createJobTiers(uint256 total) external onlyOwner {
+        require(totalTiers == 0, "CryptoNyJobs.createJobTiers.tiersExist");
+
+        totalTiers = total;
+        for (uint256 i = 0; i < total; i++) {
+            totalJobsInTier[i] = 0;
+        }
     }
 
-    function _createJobType(
+    function _setJobType(
         uint256 tier,
+        uint256 jobId,
         uint256 energy,
         uint256 payout,
         uint256 experience,
         uint256 experiencePerTier
     ) external onlyOwner {
         require(tier < totalTiers, "CryptoNyJobs.createJobType.invalidTier");
+        require(
+            jobTier[tier][jobId].energy == 0,
+            "CryptoNyJobs.createJobType.jobExists"
+        );
 
-        totalJobsInTier[tier]++;
-        jobTier[tier].push(Job(energy, payout, experience, experiencePerTier));
+        if (totalJobsInTier[tier] <= jobId) {
+            totalJobsInTier[tier] = jobId + 1;
+        }
+
+        jobTier[tier][jobId] = Job(
+            energy,
+            payout,
+            experience,
+            experiencePerTier
+        );
     }
 
     function _setWalletContract(address _walletContract) public {

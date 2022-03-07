@@ -4,7 +4,11 @@ import useCharacterTokens from "../hooks/useCharacterTokens";
 import formatNumber from "../../utils/formatNumber";
 
 const totalExperienceForLevel = (level) => {
-  return 100 * ((level / 4) ^ 2);
+  return Math.ceil(100 * (level / 4) ** 2);
+};
+
+const totalExperienceNeeded = (currentExperience, nextLevel) => {
+  return totalExperienceForLevel(nextLevel);
 };
 
 const CharacterBar = ({ characterId }) => {
@@ -31,16 +35,20 @@ const CharacterBar = ({ characterId }) => {
       <Box mx={2}>
         <Text fontWeight="bold">Level</Text>
         <Text mb={2}>
-          {character.level?.toString()}{" "}
+          {character.level?.toString()} (
+          {formatNumber(character?.experience?.toNumber(), { style: "normal" })}
+          /
+          {formatNumber(
+            totalExperienceForLevel(character.level?.toNumber() + 1),
+            {
+              style: "normal",
+            }
+          )}
+          XP)
           {character.skillPoints?.toNumber()
             ? `(${character.skillPoints} SP)`
             : null}
         </Text>
-      </Box>
-
-      <Box mx={2}>
-        <Text fontWeight="bold">Experience</Text>
-        <Text mb={2}>{character.experience?.toString()}</Text>
       </Box>
 
       <Box mx={2}>

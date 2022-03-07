@@ -42,7 +42,7 @@ contract CryptoNYProperties is ERC721, ERC721Enumerable, Ownable {
     }
 
     // On-chain properties of each property type
-    Property[] public propertyTypes;
+    Property[10] public propertyTypes;
 
     // Propertys are NFTs and ERC721 stores the owner information
     // This stores the properties of each NFT on-chain.
@@ -243,20 +243,19 @@ contract CryptoNYProperties is ERC721, ERC721Enumerable, Ownable {
     }
 
     function _createPropertyType(
+        uint256 propertyId,
         uint256 cost,
         uint256 costPerLevel,
         uint256 incomePerLevel,
         uint256 maxLevel,
         uint256 maxCollection
     ) external onlyOwner {
-        propertyTypes.push(
-            Property(
-                cost,
-                costPerLevel,
-                incomePerLevel,
-                maxLevel,
-                maxCollection
-            )
+        propertyTypes[propertyId] = Property(
+            cost,
+            costPerLevel,
+            incomePerLevel,
+            maxLevel,
+            maxCollection
         );
     }
 
