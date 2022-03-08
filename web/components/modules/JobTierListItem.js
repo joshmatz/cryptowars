@@ -12,6 +12,8 @@ import useJobsContract from "../hooks/useJobsContract";
 import { AiFillCheckSquare, AiOutlineBorder } from "react-icons/ai";
 import RouterLink from "next/link";
 import { FaCircle } from "react-icons/fa";
+import { useRouter } from "next/router";
+import { useEffect } from "react";
 
 const tierNames = [
   "Thodex",
@@ -27,6 +29,7 @@ const tierNames = [
 ];
 
 const JobTierListItem = ({ characterId, tierIndex, selectedIndex }) => {
+  const router = useRouter();
   const jobContract = useJobsContract();
   const { data: unlockedJobTiers } = useQuery(
     `unlockedJobTiers-${characterId}`,
@@ -38,10 +41,18 @@ const JobTierListItem = ({ characterId, tierIndex, selectedIndex }) => {
 
   const jobTierUnlocked = unlockedJobTiers?.toNumber();
 
-  const isUnlocked = jobTierUnlocked > tierIndex;
+  const isUnlocked = jobTierUnlocked >= tierIndex;
   const unlockedColor = useColorModeValue("blue.400", "blue.600");
   const lockedColor = useColorModeValue("gray.600", "gray.500");
   const isSelectedIndex = selectedIndex === tierIndex.toString();
+  const isCompleted = jobTierUnlocked > tierIndex;
+
+  useEffect(() => {
+    if (typeof jobTierUnlocked === "number" && isUnlocked) {
+      router.push(`/game/characters/${characterId}/jobs/${jobTierUnlocked}`);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isUnlocked, jobTierUnlocked, characterId]);
 
   return (
     <Stack direction="column" flex="1">
@@ -61,7 +72,7 @@ const JobTierListItem = ({ characterId, tierIndex, selectedIndex }) => {
             as={
               isSelectedIndex
                 ? FaCircle
-                : isUnlocked
+                : isCompleted
                 ? AiFillCheckSquare
                 : AiOutlineBorder
             }

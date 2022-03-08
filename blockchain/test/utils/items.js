@@ -38,6 +38,7 @@ const getItemInfo = (itemClass, rawItem) => {
   const defense = parseInt(parsedItem[defenseIndex], 10);
 
   return {
+    name: parsedItem[0],
     class: itemClass,
     attack,
     defense,

@@ -22,17 +22,29 @@ describe("cryptoWars.jobs", function () {
 
   this.beforeAll(async function () {
     const results = await main();
-    ({
-      owner,
-      guest,
-      cryptoChar,
-      cryptoNyProperties,
-      cryptoNyERC20,
-      cryptoNyWallet,
-      cryptoNyJobs,
-      propertyTypes,
-    } = results);
-
+    cryptoChar = await ethers.getContractAt(
+      "CryptoChar",
+      results.characterAddress
+    );
+    cryptoNyProperties = await ethers.getContractAt(
+      "CryptoNYProperties",
+      results.propertiesAddress
+    );
+    cryptoNyERC20 = await ethers.getContractAt(
+      "CryptoNYERC20",
+      results.ERC20Address
+    );
+    cryptoNyWallet = await ethers.getContractAt(
+      "CryptoNYWallet",
+      results.walletAddress
+    );
+    cryptoNyJobs = await ethers.getContractAt(
+      "CryptoNYJobs",
+      results.jobsAddress
+    );
+    owner = results.owner;
+    guest = results.guest;
+    propertyTypes = results.propertyTypes;
     await cryptoChar.connect(guest).create("hiya", 0);
   });
 
@@ -290,11 +302,8 @@ describe("cryptoWars.jobs", function () {
 
     describe("energy requirements", function () {
       it("should use up all energy and then require more", async () => {
-        await cryptoNyJobs.completeJob(ownerCharacterId, 0, 0, 1);
-        await cryptoNyJobs.completeJob(ownerCharacterId, 0, 0, 1);
-        await cryptoNyJobs.completeJob(ownerCharacterId, 0, 0, 1);
         await expect(
-          cryptoNyJobs.completeJob(ownerCharacterId, 0, 0, 1)
+          cryptoNyJobs.completeJob(ownerCharacterId, 0, 0, 4)
         ).to.be.revertedWith("CryptoChar.updateCurrentAttributes.energy");
       });
     });
@@ -307,7 +316,7 @@ describe("cryptoWars.jobs", function () {
       this.beforeAll(async () => {
         const lastBlock = await ethers.provider.getBlock();
         previousCharacter = await cryptoChar.characters(ownerCharacterId);
-
+        console.log("fastforwarding...");
         await ethers.provider.send("evm_setNextBlockTimestamp", [
           previousCharacter.energy.lastCollected.add(60 * 50).toNumber(),
         ]);
@@ -349,8 +358,8 @@ describe("cryptoWars.jobs", function () {
         newCharacter = await cryptoChar.characters(ownerCharacterId);
       });
 
-      it("should require 146.25 jobs", async () => {
-        expect(requiredForLevelFive).to.be.equal(146.25);
+      it("should require 149.25 jobs", async () => {
+        expect(requiredForLevelFive).to.be.equal(149.25);
       });
 
       it("should achieve mastery level 3", async () => {
@@ -363,7 +372,7 @@ describe("cryptoWars.jobs", function () {
 
       it("should add 7 skillpoints", () => {
         expect(newCharacter.skillPoints).to.be.equal(
-          previousCharacter.skillPoints.add(6)
+          previousCharacter.skillPoints.add(7)
         );
       });
     });
@@ -732,14 +741,12 @@ describe("cryptoWars.jobs", function () {
 
           await cryptoChar.regenerateEnergy(ownerCharacterId);
           if (previousCharacter.skillPoints.toNumber()) {
-            if (completions % 10 === 0) {
-              console.log(
-                "level up!",
-                ++completions,
-                "jobs done: ",
-                jobsCompleted
-              );
-            }
+            console.log(
+              "level up!",
+              ++completions,
+              "jobs done: ",
+              jobsCompleted
+            );
             await cryptoChar.useSkillPoints(
               ownerCharacterId,
               previousCharacter.skillPoints,

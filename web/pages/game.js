@@ -19,6 +19,7 @@ import useCharacter from "../components/hooks/useCharacter";
 import useCharacterTokens from "../components/hooks/useCharacterTokens";
 import CharacterContractAbi from "../constants/contracts/CharacterContractAbi";
 import useContractMutation from "../components/hooks/useContractMutation";
+import formatNumber from "../utils/formatNumber";
 
 const SimpleCharacterBar = ({ characterId }) => {
   const { data: character } = useCharacter(characterId);
@@ -27,7 +28,7 @@ const SimpleCharacterBar = ({ characterId }) => {
   return (
     <>
       <Td>{character?.name}</Td>
-      <Td>{tokens ? ethers.utils.formatEther(tokens.toString()) : 0}</Td>
+      <Td>${formatNumber(tokens)}</Td>
       <Td>
         {character?.energy?.current.toString()} /{" "}
         {character?.energy?.equippedMax.toString()}

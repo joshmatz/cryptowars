@@ -11,6 +11,16 @@ const { jobTiers } = require("../test/utils/jobs");
 const { propertyTypes } = require("../test/utils/properties");
 const { itemTypes } = require("../test/utils/items");
 
+const getItemTypeId = (itemTypeName) => {
+  const found = itemTypes.findIndex(
+    (itemType) => itemType.name === itemTypeName
+  );
+  if (found === -1) {
+    return 0;
+  }
+  return found;
+};
+
 const propertyTypePropsToArray = (props) => {
   return [
     props.cost,
@@ -27,6 +37,7 @@ const jobPropsToArray = (props) => {
     props.payout,
     props.experience,
     props.experiencePerTier,
+    getItemTypeId(props.rewardItemTypeName),
   ];
 };
 
@@ -140,7 +151,11 @@ const deployCryptoPropertiesContract = async (
   return cryptoNyProperties.address;
 };
 
-const deployJobsContract = async (characterAddress, walletAddress) => {
+const deployJobsContract = async (
+  characterAddress,
+  walletAddress,
+  itemsAddress
+) => {
   if (process.env.JOBS_CONTRACT_ADDRESS) {
     console.log("Skipping Jobs Deployment");
     return process.env.JOBS_CONTRACT_ADDRESS;
@@ -149,7 +164,8 @@ const deployJobsContract = async (characterAddress, walletAddress) => {
 
   const cryptoNyJobs = await CryptoNYJobs.deploy(
     characterAddress,
-    walletAddress
+    walletAddress,
+    itemsAddress
   );
   transactions.push(await cryptoNyJobs.deployed());
   console.log(`JOBS_CONTRACT_ADDRESS=${cryptoNyJobs.address}`);
@@ -233,21 +249,25 @@ async function main({
     characterAddress,
     walletAddress
   );
-  jobsAddress = await deployJobsContract(characterAddress, walletAddress);
   itemsAddress = await deployItemContract(characterAddress, walletAddress);
+  jobsAddress = await deployJobsContract(
+    characterAddress,
+    walletAddress,
+    itemsAddress
+  );
 
   /**
    * Set up wallet
    */
 
-  // if (guest) {
-  //   console.log("guest");
-  //   const c = await ethers.getContractAt("CryptoNYERC20", ERC20Address);
-  //   transactions.push(
-  //     await c.connect(guest).approve(walletAddress, ethers.constants.MaxUint256)
-  //   );
-  //   console.log("guest approval complete");
-  // }
+  if (guest) {
+    console.log("guest");
+    const c = await ethers.getContractAt("CryptoNYERC20", ERC20Address);
+    transactions.push(
+      await c.connect(guest).approve(walletAddress, ethers.constants.MaxUint256)
+    );
+    console.log("guest approval complete");
+  }
 
   /**
    * Set up Properties

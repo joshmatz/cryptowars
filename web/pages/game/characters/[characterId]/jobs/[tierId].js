@@ -143,11 +143,9 @@ const JobTierPage = () => {
   const {
     query: { tierId, characterId },
   } = router;
-  if (!tierId) {
-    return null;
-  }
 
   const jobs = jobTiers[tierId].jobs;
+
   if (!jobs) {
     return <Box>No jobs</Box>;
   }
@@ -157,7 +155,7 @@ const JobTierPage = () => {
       <Text mb={10}>
         Master these jobs to move on to bigger and greater things.
       </Text>
-      <JobTierList selectedIndex={tierId}>
+      <JobTierList selectedIndex={tierId} characterId={characterId}>
         {jobs.map((job, i) => {
           return (
             <JobRow
@@ -165,7 +163,7 @@ const JobTierPage = () => {
               job={job}
               tierId={tierId}
               jobIndex={i}
-              key={i}
+              key={`${tierId}-${i}`}
             />
           );
         })}

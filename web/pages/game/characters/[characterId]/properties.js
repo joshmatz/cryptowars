@@ -26,6 +26,7 @@ import useCharacter from "../../../../components/hooks/useCharacter";
 import useCharacterTokens from "../../../../components/hooks/useCharacterTokens";
 import useTimer from "../../../../components/hooks/useTimer";
 import PropertyTimer from "../../../../components/modules/PropertyTimer";
+import { parseInt } from "lodash";
 
 const calculateUpgradeCost = ({
   costPerLevel,
@@ -194,6 +195,7 @@ const PropertyRow = ({ characterId, propertyTypeIndex }) => {
                       costPerLevel: propertyType.costPerLevel,
                       cost: propertyType.cost,
                       currentLevel: characterProperty.level,
+                      levels: parseInt(upgradesToBuy, 10) || 0,
                     })
                   )}`}
             </Button>

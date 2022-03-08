@@ -32,6 +32,11 @@ const ConnectButton = () => {
     );
   }
 
+  // TODO: When clicking a connected account button,
+  // show modal that the:
+  // - address
+  // - wallet type
+  // - additional helpful info
   return web3State.address ? (
     <Button variant="outline">{truncate(web3State.address, 13)}</Button>
   ) : (

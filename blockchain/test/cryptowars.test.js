@@ -39,27 +39,29 @@ describe("CryptoChar", function () {
   let propertyTypes = [];
   this.beforeAll(async function () {
     const results = await main();
-    ({
-      owner,
-      guest,
-      cryptoChar,
-      cryptoNyProperties,
-      cryptoNyERC20,
-      cryptoNyWallet,
-      cryptoNyJobs,
-      propertyTypes,
-    } = results);
-
-    // ({
-    //   owner,
-    //   guest,
-    //   cryptoChar,
-    //   cryptoNyProperties,
-    //   cryptoNyERC20,
-    //   cryptoNyWallet,
-    //   cryptoNyJobs,
-    //   propertyTypes,
-    // } = );
+    cryptoChar = await ethers.getContractAt(
+      "CryptoChar",
+      results.characterAddress
+    );
+    cryptoNyProperties = await ethers.getContractAt(
+      "CryptoNYProperties",
+      results.propertiesAddress
+    );
+    cryptoNyERC20 = await ethers.getContractAt(
+      "CryptoNYERC20",
+      results.ERC20Address
+    );
+    cryptoNyWallet = await ethers.getContractAt(
+      "CryptoNYWallet",
+      results.walletAddress
+    );
+    cryptoNyJobs = await ethers.getContractAt(
+      "CryptoNYJobs",
+      results.jobsAddress
+    );
+    owner = results.owner;
+    guest = results.guest;
+    propertyTypes = results.propertyTypes;
   });
 
   describe("contract creation", () => {

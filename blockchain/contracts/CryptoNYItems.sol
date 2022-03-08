@@ -28,6 +28,7 @@ contract CryptoNYItems is ERC721, ERC721Enumerable, Ownable {
         CONSUMABLE
     }
 
+    // TODO: Reward items guaranteed
     enum ItemRarity {
         IS_NOT_SET,
         COMMON,
@@ -36,6 +37,9 @@ contract CryptoNYItems is ERC721, ERC721Enumerable, Ownable {
         EPIC,
         LEGENDARY
     }
+
+    uint256 public currentTokenId = 0;
+    uint256[] public itemRarityWeights = [0, 850, 925, 970, 990, 999];
 
     struct ItemType {
         ItemClass class;
@@ -125,32 +129,25 @@ contract CryptoNYItems is ERC721, ERC721Enumerable, Ownable {
         address _caller,
         uint256 _itemTypeId,
         uint256 _characterId,
+        uint256 _seed,
         uint256 _attempts
     ) public {
         require(
             itemTypes[_itemTypeId].class != ItemClass.IS_NOT_SET,
             "CryptoNYItems.createItemForCharacter.invalidItemTypeId"
         );
-        uint256 _rarityChance = 0;
+        uint256 _rarityChance = itemRarityWeights[
+            uint256(itemTypes[_itemTypeId].rarity)
+        ];
 
-        if (itemTypes[_itemTypeId].rarity == ItemRarity.COMMON) {
-            _rarityChance = 850;
-        } else if (itemTypes[_itemTypeId].rarity == ItemRarity.UNCOMMON) {
-            _rarityChance = 925;
-        } else if (itemTypes[_itemTypeId].rarity == ItemRarity.RARE) {
-            _rarityChance = 970;
-        } else if (itemTypes[_itemTypeId].rarity == ItemRarity.EPIC) {
-            _rarityChance = 990;
-        } else {
-            _rarityChance = 999;
-        }
+        // TODO: This has the downside of minting too many or too little according
+        // to our intended rarity in cases where the roll is great or terrible.
+        // How can we normalize the distribution to the intended rarity?
+        uint256 _rarityRoll = _random(_seed, 1000 * _attempts);
+        uint256 successes = _rarityRoll.div(_rarityChance);
 
-        for (uint256 i = 0; i < _attempts; i++) {
-            uint256 _rarityRoll = _random(totalSupply() + i, 1000);
-
-            if (_rarityRoll >= _rarityChance) {
-                mintItemToCharacter(_caller, _itemTypeId, _characterId);
-            }
+        for (uint256 i = 0; i < successes; i++) {
+            mintItemToCharacter(_caller, _itemTypeId, _characterId);
         }
     }
 
@@ -164,7 +161,8 @@ contract CryptoNYItems is ERC721, ERC721Enumerable, Ownable {
             "CryptoNYItems.createItemForCharacter.invalidItemTypeId"
         );
 
-        uint256 itemId = totalSupply();
+        uint256 itemId = currentTokenId;
+        currentTokenId += 1;
         _safeMint(_caller, itemId);
         ownedItems[itemId] = OwnedItem(_itemTypeId, _characterId);
         characterItemTypes[_characterId].add(_itemTypeId);

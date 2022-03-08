@@ -9,9 +9,18 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "./ICharacter.sol";
 import "./ICryptoNYWallet.sol";
+import "./IItems.sol";
 
 contract CryptoNYJobs is Ownable {
     using SafeMath for uint256;
+
+    event JobComplete(
+        address indexed sender,
+        uint256 characterId,
+        uint256 jobTierId,
+        uint256 jobId,
+        uint256 runs
+    );
 
     uint256 public constant REGION = 0;
     uint256 public constant MAX_MASTERY = 3;
@@ -25,12 +34,12 @@ contract CryptoNYJobs is Ownable {
         uint256 payout;
         uint256 experience;
         uint256 experiencePerTier;
-
         // TODO: Required Items
         // uint256[] requiredItems;
         // uint256[] requiredItemCounts;
-        // uint256[] itemRewards;
-        // uint256[] itemRewardCounts;
+
+        // TODO: Multiole reward items
+        uint256 rewardItemId;
     }
 
     struct JobExperience {
@@ -52,11 +61,17 @@ contract CryptoNYJobs is Ownable {
     address public contractOwner;
     address public characterContract;
     address public walletContract;
+    address public itemsContract;
 
-    constructor(address _charContract, address _walletContract) {
+    constructor(
+        address _charContract,
+        address _walletContract,
+        address _itemsContract
+    ) {
         contractOwner = msg.sender;
         characterContract = _charContract;
         walletContract = _walletContract;
+        itemsContract = _itemsContract;
     }
 
     modifier isCharacterOwner(uint256 characterId) {
@@ -150,8 +165,21 @@ contract CryptoNYJobs is Ownable {
             0,
             skillPoints
         );
+
+        if (job.rewardItemId != 0) {
+            IItems(itemsContract).rewardItemToCharacter(
+                msg.sender,
+                characterId,
+                job.rewardItemId,
+                newExp,
+                runs
+            );
+        }
+
+        // emit completion event
+        // emit JobComplete(msg.sender, characterId, tierId, jobId, runs);
+
         // TODO: Burn items
-        // TODO: Mint items
     }
 
     function _createJobTiers(uint256 total) external onlyOwner {
@@ -169,7 +197,8 @@ contract CryptoNYJobs is Ownable {
         uint256 energy,
         uint256 payout,
         uint256 experience,
-        uint256 experiencePerTier
+        uint256 experiencePerTier,
+        uint256 rewardItemId
     ) external onlyOwner {
         require(tier < totalTiers, "CryptoNyJobs.createJobType.invalidTier");
         require(
@@ -185,7 +214,8 @@ contract CryptoNYJobs is Ownable {
             energy,
             payout,
             experience,
-            experiencePerTier
+            experiencePerTier,
+            rewardItemId
         );
     }
 

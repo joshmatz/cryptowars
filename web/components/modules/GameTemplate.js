@@ -6,6 +6,8 @@ import { useWeb3Context } from "../Web3ContextProvider";
 import NetworkButtons from "./NetworkButtons";
 import ChainCheckModal from "./ChainCheckModal";
 import CharacterBar from "./CharacterBar";
+import useJobsContract from "../hooks/useJobsContract";
+import { useQuery } from "react-query";
 
 const GameNavigation = () => {
   const router = useRouter();
@@ -13,6 +15,16 @@ const GameNavigation = () => {
     query: { characterId },
     asPath,
   } = router;
+  const jobContract = useJobsContract();
+  const { data: unlockedJobTiers } = useQuery(
+    `unlockedJobTiers-${characterId}`,
+    () => jobContract.characterJobTier(characterId),
+    {
+      enabled: !!jobContract && !!characterId,
+    }
+  );
+
+  const jobTierUnlocked = unlockedJobTiers?.toNumber();
 
   const navLinks = [
     {
@@ -20,7 +32,8 @@ const GameNavigation = () => {
       label: "Home",
     },
     {
-      href: `/game/characters/${characterId}/jobs/0`,
+      base: `/game/characters/${characterId}/jobs/`,
+      href: `/game/characters/${characterId}/jobs/${jobTierUnlocked}`,
       label: "Jobs",
     },
     {
@@ -45,12 +58,13 @@ const GameNavigation = () => {
     <Box display="flex" mb={5}>
       <Box>
         {navLinks.map((item) => {
+          let isSelected = asPath === item.href;
+          if (!isSelected && item.base) {
+            isSelected = asPath.indexOf(item.base) === 0;
+          }
           return (
             <RouterLink passHref href={item.href} key={item.href}>
-              <Button
-                as="a"
-                variant={item.href === asPath ? undefined : "ghost"}
-              >
+              <Button as="a" variant={isSelected ? undefined : "ghost"}>
                 {item.label}
               </Button>
             </RouterLink>

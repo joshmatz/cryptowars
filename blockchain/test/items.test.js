@@ -394,7 +394,14 @@ describe("cryptoWars.items", function () {
         0,
         0
       );
-      await itemsContract.rewardItemToCharacter(wallet.address, 0, 0, 50);
+      await itemsContract.rewardItemToCharacter(
+        wallet.address,
+        0,
+        0,
+        Math.floor(Math.random() * 1000) + 1,
+        50
+      );
+
       newTotalSupply = await itemsContract.totalSupply();
 
       newCharacterItemTypeSupply = await itemsContract.characterItemSupply(
