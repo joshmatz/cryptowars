@@ -30,15 +30,15 @@ const SimpleCharacterBar = ({ characterId }) => {
       <Td>{character?.name}</Td>
       <Td>${formatNumber(tokens)}</Td>
       <Td>
-        {character?.energy?.current.toString()} /{" "}
+        {character?.energy?.adjustedCurrent.toString()} /{" "}
         {character?.energy?.equippedMax.toString()}
       </Td>
       <Td>
-        {character?.stamina?.current.toString()} /{" "}
+        {character?.stamina?.adjustedCurrent.toString()} /{" "}
         {character?.stamina?.equippedMax.toString()}
       </Td>
       <Td>
-        {character?.health?.current.toString()} /{" "}
+        {character?.health?.adjustedCurrent.toString()} /{" "}
         {character?.health?.equippedMax.toString()}
       </Td>
       <Td>

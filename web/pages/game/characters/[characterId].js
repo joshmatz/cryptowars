@@ -13,10 +13,6 @@ const CharacterPage = () => {
   } = router;
   const { data: character, refetch } = useCharacter(characterId);
 
-  if (!character) {
-    return null;
-  }
-
   return (
     <GameTemplate characterId={characterId}>
       <Stack

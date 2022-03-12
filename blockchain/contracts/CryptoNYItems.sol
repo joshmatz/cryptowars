@@ -140,14 +140,32 @@ contract CryptoNYItems is ERC721, ERC721Enumerable, Ownable {
             uint256(itemTypes[_itemTypeId].rarity)
         ];
 
+        // console.log("_rarityChance", _rarityChance);
+
+        //(( success - (attempts * rarity)) / 5) + (attempts * rarity)
+
         // TODO: This has the downside of minting too many or too little according
         // to our intended rarity in cases where the roll is great or terrible.
         // How can we normalize the distribution to the intended rarity?
-        uint256 _rarityRoll = _random(_seed, 1000 * _attempts);
-        uint256 successes = _rarityRoll.div(_rarityChance);
+        // uint256 _rarityRoll = _random(
+        //     _seed,
+        //     1000 - _rarityChance + _rarityChance * _attempts
+        // );
+        // uint256 successes = _rarityRoll.div(
+        //     _rarityChance + _rarityChance * _attempts
+        // );
 
-        for (uint256 i = 0; i < successes; i++) {
-            mintItemToCharacter(_caller, _itemTypeId, _characterId);
+        // uint256 dampenForce = _attempts;
+        // uint256 dampenTo = (_attempts * (1000 + (1000 - _rarityChance)));
+        // successes = ((successes - dampenTo) / dampenForce) + dampenTo;
+
+        // console.log(_attempts, successes);
+
+        for (uint256 i = 0; i < _attempts; i++) {
+            uint256 _rarityRoll = _random(_seed + i, 1000);
+            if (_rarityRoll > _rarityChance) {
+                mintItemToCharacter(_caller, _itemTypeId, _characterId);
+            }
         }
     }
 
@@ -200,6 +218,13 @@ contract CryptoNYItems is ERC721, ERC721Enumerable, Ownable {
         delete ownedItems[itemId];
     }
 
+    // function equipItemToCharacter(uint256 _itemId, uint256 _characterId)
+    //     public
+    //     isCharacterOwner(_characterId)
+    // {
+    //     // Todo: write internal equip
+    // }
+
     function assignItemToCharacter(uint256 _itemId, uint256 _characterId)
         public
         isCharacterOwner(_characterId)
@@ -214,9 +239,29 @@ contract CryptoNYItems is ERC721, ERC721Enumerable, Ownable {
         characterItemTypes[item.characterId].remove(item.itemTypeId);
         characterItems[item.characterId][item.itemTypeId].remove(_itemId);
         ownedItems[_itemId].characterId = _characterId;
+
+        // TODO: Run internal equip method.
     }
 
     // TODO: TokenURI View
+
+    function _equipItemToCharacter(uint256 _itemId, uint256 _characterId)
+        internal
+    {
+        // TODO: Check to see if item is equipped already
+        // TODO: Check to see if character has maximum items equipped
+        // TODO: Check lowest value item if all item slots are taken.
+        // TODO: Unequip lowest value item and equip this new item.
+        // TODO: Update character stats.
+    }
+
+    // TODO: Add this call to the "beforeTokenTransfer"
+    function _unequipItemFromCharacteR(uint256 _itemId, uint256 _characterId)
+        internal
+    {
+        // TODO: Remove item from equipped storage
+        // TODO: Update character stats.
+    }
 
     function _createItemType(
         uint256 _itemTypeId,

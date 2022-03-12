@@ -26,6 +26,7 @@ const useContractMutation = (
         duration: 9000,
         isClosable: true,
       });
+      return;
     }
 
     ref.current = toast({

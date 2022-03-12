@@ -1,4 +1,4 @@
-module.exports = `BBaseball Bat	1	0	1	Common	Melee	New York	No
+module.exports = `Baseball Bat	1	0	1	Common	Melee	New York	No
 Crowbar	1	1	2	Common	Melee	New York	No
 .22 Pistol	2	0	2	Common	Handgun	New York	Yes
 Butterfly Knife	2	1	3	Common	Melee	New York	Yes

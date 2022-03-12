@@ -1,6 +1,10 @@
 const { expect } = require("chai");
 const { waffle, ethers, artifacts } = require("hardhat");
-const { deployPromise, getTestProperties, main } = require("../scripts/deploy");
+const {
+  deployPromise,
+  getTestProperties,
+  main,
+} = require("../scripts/deployHelper");
 const hoursToSeconds = require("date-fns/hoursToSeconds");
 const { BigNumber } = require("ethers");
 const { jobTiers } = require("./utils/jobs");
@@ -15,13 +19,13 @@ const { provider, deployContract, deployMockContract } = waffle;
 const [wallet, otherWallet] = provider.getWallets();
 
 const getItemId = (name) => {
-  const found = things.itemTypes.find((item) => item.name === name);
+  const found = things.itemTypes.findIndex((item) => item.name === name);
 
   if (found === -1) {
     return 0;
   }
 
-  return things.itemTypes.find((item) => item.name === name);
+  return found;
 };
 
 const jobPropsToArray = (props) => {
@@ -30,7 +34,9 @@ const jobPropsToArray = (props) => {
     props.payout,
     props.experience,
     props.experiencePerTier,
-    getItemId(props.rewardItemTypeName),
+    props.requiredItemTypeNames.map(getItemId),
+    props.requiredItemTypeCounts,
+    props.rewardItemTypeNames.map(getItemId),
   ];
 };
 
@@ -58,7 +64,9 @@ describe("cryptoWars.itemJobs", function () {
         payout: 0,
         experience: 0,
         experiencePerTier: 1,
-        rewardItemTypeId: 0,
+        requiredItemTypeNames: [],
+        requiredItemTypeCounts: [],
+        rewardItemTypeNames: [],
       })
     );
     await jobsContract._setJobType(
@@ -69,7 +77,9 @@ describe("cryptoWars.itemJobs", function () {
         payout: 0,
         experience: 0,
         experiencePerTier: 1,
-        rewardItemTypeId: 1,
+        requiredItemTypeNames: [],
+        requiredItemTypeCounts: [],
+        rewardItemTypeNames: ["Baseball Bat"],
       })
     );
 

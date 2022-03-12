@@ -1,6 +1,10 @@
 const { expect } = require("chai");
 const { ethers } = require("hardhat");
-const { deployPromise, getTestProperties, main } = require("../scripts/deploy");
+const {
+  deployPromise,
+  getTestProperties,
+  main,
+} = require("../scripts/deployHelper");
 const hoursToSeconds = require("date-fns/hoursToSeconds");
 const { BigNumber } = require("ethers");
 const { jobTiers } = require("./utils/jobs");
@@ -710,7 +714,105 @@ describe("cryptoWars.jobs", function () {
       let exp;
       let previousCharacterBalance;
       let characterBalance;
+
       this.beforeAll(async () => {
+        previousCharacter = await cryptoChar.characters(ownerCharacterId);
+
+        await ethers.provider.send("evm_setNextBlockTimestamp", [
+          previousCharacter.energy.lastCollected.add(60 * 5000).toNumber(),
+        ]);
+
+        await cryptoChar.regenerateEnergy(ownerCharacterId);
+        let completions = 0;
+        let jobsCompleted = 0;
+        do {
+          previousCharacter = await cryptoChar.characters(ownerCharacterId);
+
+          await cryptoNyJobs.completeJob(
+            ownerCharacterId,
+            jobTier,
+            0,
+            previousCharacter.energy.current.div(
+              jobTiers[jobTier].jobs[0].energy
+            )
+          );
+
+          await ethers.provider.send("evm_setNextBlockTimestamp", [
+            previousCharacter.energy.lastCollected.add(60 * 5000).toNumber(),
+          ]);
+          jobsCompleted += previousCharacter.energy.current
+            .div(jobTiers[jobTier].jobs[0].energy)
+            .toNumber();
+
+          await cryptoChar.regenerateEnergy(ownerCharacterId);
+          if (previousCharacter.skillPoints.toNumber()) {
+            console.log(
+              "level up!",
+              ++completions,
+              "jobs done: ",
+              jobsCompleted
+            );
+            await cryptoChar.useSkillPoints(
+              ownerCharacterId,
+              previousCharacter.skillPoints,
+              0,
+              0,
+              0
+            );
+          }
+          previousCharacter = await cryptoChar.characters(ownerCharacterId);
+        } while (previousCharacter.energy.current.lt(35));
+      });
+
+      it("should get energy to 70", async () => {
+        previousCharacter = await cryptoChar.characters(ownerCharacterId);
+
+        await ethers.provider.send("evm_setNextBlockTimestamp", [
+          previousCharacter.energy.lastCollected.add(60 * 5000).toNumber(),
+        ]);
+
+        await cryptoChar.regenerateEnergy(ownerCharacterId);
+        let completions = 0;
+        let jobsCompleted = 0;
+        do {
+          previousCharacter = await cryptoChar.characters(ownerCharacterId);
+
+          await cryptoNyJobs.completeJob(
+            ownerCharacterId,
+            jobTier,
+            0,
+            previousCharacter.energy.current.div(
+              jobTiers[jobTier].jobs[0].energy
+            )
+          );
+
+          await ethers.provider.send("evm_setNextBlockTimestamp", [
+            previousCharacter.energy.lastCollected.add(60 * 5000).toNumber(),
+          ]);
+          jobsCompleted += previousCharacter.energy.current
+            .div(jobTiers[jobTier].jobs[0].energy)
+            .toNumber();
+
+          await cryptoChar.regenerateEnergy(ownerCharacterId);
+          if (previousCharacter.skillPoints.toNumber()) {
+            console.log(
+              "level up!",
+              ++completions,
+              "jobs done: ",
+              jobsCompleted
+            );
+            await cryptoChar.useSkillPoints(
+              ownerCharacterId,
+              previousCharacter.skillPoints,
+              0,
+              0,
+              0
+            );
+          }
+          previousCharacter = await cryptoChar.characters(ownerCharacterId);
+        } while (previousCharacter.energy.current.lt(100));
+      });
+      it("gather more energy in a separate test due to timeout limits in mocha", async () => {
         previousCharacter = await cryptoChar.characters(ownerCharacterId);
 
         await ethers.provider.send("evm_setNextBlockTimestamp", [

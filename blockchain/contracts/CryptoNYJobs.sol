@@ -34,12 +34,9 @@ contract CryptoNYJobs is Ownable {
         uint256 payout;
         uint256 experience;
         uint256 experiencePerTier;
-        // TODO: Required Items
-        // uint256[] requiredItems;
-        // uint256[] requiredItemCounts;
-
-        // TODO: Multiole reward items
-        uint256 rewardItemId;
+        uint256[] requiredItemIds;
+        uint256[] requiredItemCounts;
+        uint256[] rewardItemIds;
     }
 
     struct JobExperience {
@@ -166,18 +163,20 @@ contract CryptoNYJobs is Ownable {
             skillPoints
         );
 
-        if (job.rewardItemId != 0) {
-            IItems(itemsContract).rewardItemToCharacter(
-                msg.sender,
-                characterId,
-                job.rewardItemId,
-                newExp,
-                runs
-            );
+        if (job.rewardItemIds.length != 0) {
+            for (uint256 i = 0; i < job.rewardItemIds.length; i++) {
+                IItems(itemsContract).rewardItemToCharacter(
+                    msg.sender,
+                    characterId,
+                    job.rewardItemIds[i],
+                    newExp,
+                    runs
+                );
+            }
         }
 
         // emit completion event
-        // emit JobComplete(msg.sender, characterId, tierId, jobId, runs);
+        emit JobComplete(msg.sender, characterId, tierId, jobId, runs);
 
         // TODO: Burn items
     }
@@ -198,7 +197,9 @@ contract CryptoNYJobs is Ownable {
         uint256 payout,
         uint256 experience,
         uint256 experiencePerTier,
-        uint256 rewardItemId
+        uint256[] calldata requiredItemIds,
+        uint256[] calldata requiredItemCounts,
+        uint256[] calldata rewardItemIds
     ) external onlyOwner {
         require(tier < totalTiers, "CryptoNyJobs.createJobType.invalidTier");
         require(
@@ -215,7 +216,9 @@ contract CryptoNYJobs is Ownable {
             payout,
             experience,
             experiencePerTier,
-            rewardItemId
+            requiredItemIds,
+            requiredItemCounts,
+            rewardItemIds
         );
     }
 

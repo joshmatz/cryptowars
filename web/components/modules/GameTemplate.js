@@ -1,4 +1,14 @@
-import { Box, Button, Container, Link, Text } from "@chakra-ui/react";
+import {
+  Box,
+  Button,
+  Container,
+  Link,
+  Modal,
+  ModalBody,
+  ModalContent,
+  ModalOverlay,
+  Text,
+} from "@chakra-ui/react";
 import Head from "next/head";
 import RouterLink from "next/link";
 import { useRouter } from "next/router";
@@ -8,6 +18,7 @@ import ChainCheckModal from "./ChainCheckModal";
 import CharacterBar from "./CharacterBar";
 import useJobsContract from "../hooks/useJobsContract";
 import { useQuery } from "react-query";
+import useCharacter from "../hooks/useCharacter";
 
 const GameNavigation = () => {
   const router = useRouter();
@@ -77,8 +88,36 @@ const GameNavigation = () => {
 
 const GameTemplate = ({ children, characterId }) => {
   const { web3State: { isInitializing } = {} } = useWeb3Context();
+  const {
+    data: character,
+    status: characterStatus,
+    refetch,
+  } = useCharacter(characterId);
+
   if (isInitializing) {
     return <Box />;
+  }
+
+  if (characterId && !characterStatus === "loading") {
+    return null;
+  }
+
+  if (characterId && !character) {
+    return (
+      <Modal isOpen>
+        <ModalOverlay />
+        <ModalContent>
+          <ModalBody>
+            <Box p={5} textAlign="center">
+              <Text mb={5}>This character ain{"'"}t exist, bud.</Text>
+              <RouterLink passHref href="/game">
+                <Button as="a">Go home and try again</Button>
+              </RouterLink>
+            </Box>
+          </ModalBody>
+        </ModalContent>
+      </Modal>
+    );
   }
 
   return (
@@ -94,10 +133,10 @@ const GameTemplate = ({ children, characterId }) => {
           alignItems="center"
         >
           <Box display="flex" alignItems="center">
-            <RouterLink href="/" passHref>
-              <Text fontSize="3xl" fontFamily={"heading"} mr={2}>
+            <RouterLink href="/game" passHref>
+              <Link fontSize="3xl" fontFamily={"heading"} mr={2}>
                 CryptoWars
-              </Text>
+              </Link>
             </RouterLink>
           </Box>
           <NetworkButtons />

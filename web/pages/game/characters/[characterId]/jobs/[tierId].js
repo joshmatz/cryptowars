@@ -126,9 +126,9 @@ const JobRow = ({ job, tierId, jobIndex, characterId }) => {
           onClick={completeJob}
         >
           {character.energy.adjustedCurrent.lt(job.energy * jobRuns)
-            ? `${BigNumber.from(job.energy * jobRuns)
+            ? `-${BigNumber.from(job.energy * jobRuns)
                 .sub(character.energy.adjustedCurrent)
-                .toString()} Energy needed`
+                .toString()} Energy`
             : isLoading
             ? "..."
             : "Complete"}
