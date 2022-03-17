@@ -59,6 +59,7 @@ const StatControl = ({ keyValue, label, state, setState }) => {
 
 const SkillPointBar = ({ character, refetchCharacter }) => {
   const [state, setState] = useState({
+    health: 0,
     energy: 0,
     stamina: 0,
     attack: 0,
@@ -71,6 +72,7 @@ const SkillPointBar = ({ character, refetchCharacter }) => {
     async () => {
       const tx = await characterContract.useSkillPoints(
         character.id,
+        state.health || 0,
         state.energy || 0,
         state.stamina || 0,
         state.attack || 0,
@@ -144,6 +146,12 @@ const SkillPointBar = ({ character, refetchCharacter }) => {
           skill points to spend. Spend wisely.
         </Text>
         <Stack gap={2}>
+          <StatControl
+            keyValue="health"
+            label="Health"
+            state={state}
+            setState={setState}
+          />
           <StatControl
             keyValue="energy"
             label="Energy"

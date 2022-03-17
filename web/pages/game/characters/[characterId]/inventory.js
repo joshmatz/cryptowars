@@ -1,4 +1,4 @@
-import { Text } from "@chakra-ui/react";
+import { Box, Text } from "@chakra-ui/react";
 import { BigNumber } from "ethers";
 import { useRouter } from "next/router";
 import { useQueries, useQuery } from "react-query";
@@ -31,6 +31,7 @@ import GameTemplate from "../../../../components/modules/GameTemplate";
 
 const useCharacterItemIndices = (characterId) => {
   const itemContract = useItemContract();
+
   return useQuery(
     ["characterItemIndices", characterId],
     async () => {
@@ -52,6 +53,9 @@ const useCharacterItemIndices = (characterId) => {
 };
 
 const useCharacterItemTypes = (characterId, indices = []) => {
+  console.log({ indices });
+  const itemContract = useItemContract();
+
   const itemTypes = useQueries(
     indices.map((_, index) => {
       return {
@@ -59,7 +63,7 @@ const useCharacterItemTypes = (characterId, indices = []) => {
         queryFn: async () => {
           let itemType;
           try {
-            itemType = await itemContract.characterItemType(characterId);
+            itemType = await itemContract.characterItemType(characterId, index);
           } catch (e) {
             console.error(e);
           }
@@ -73,13 +77,46 @@ const useCharacterItemTypes = (characterId, indices = []) => {
   return itemTypes;
 };
 
-const useCharacterItems = (characterId) => {
+const useCharacterItemSupply = (characterId, itemTypeId) => {
   const itemContract = useItemContract();
 
-  const { data: indices } = useCharacterItemIndices(characterId);
-  const { data: itemTypes } = useCharacterItemTypes(characterId, indices);
+  return useQuery(
+    ["characterItemSupply", characterId, itemTypeId],
+    async () => {
+      let item;
+      try {
+        item = await itemContract.characterItemSupply(characterId, itemTypeId);
+      } catch (e) {
+        console.error(e);
+      }
 
-  return {};
+      return item;
+    },
+    {
+      enabled: !!itemContract,
+    }
+  );
+};
+
+const ItemBox = ({ characterId, query: { data: itemTypeId, status } = {} }) => {
+  const { data: itemSupply } = useCharacterItemSupply(characterId, itemTypeId);
+  if (status === "loading") {
+    return null;
+  }
+  console.log({ itemSupply });
+  return (
+    <Box>
+      <Text>
+        {itemTypeId.toString()}: {itemSupply?.toString()}
+      </Text>
+    </Box>
+  );
+};
+const useCharacterItems = (characterId) => {
+  const { data: indices } = useCharacterItemIndices(characterId);
+  const itemTypes = useCharacterItemTypes(characterId, indices);
+  console.log("ci: ", { itemTypes });
+  return { data: itemTypes };
 };
 
 const InventoryPage = () => {
@@ -88,10 +125,14 @@ const InventoryPage = () => {
     query: { characterId },
   } = router;
   const { data: items } = useCharacterItems(characterId);
-
+  console.log({ items });
   return (
     <GameTemplate characterId={characterId}>
       <Text mb={5}>Use Items to gain more power in the game.</Text>
+
+      {items.map((query, i) => (
+        <ItemBox key={i} characterId={characterId} query={query} />
+      ))}
     </GameTemplate>
   );
 };

@@ -1,6 +1,10 @@
 const { expect } = require("chai");
 const { ethers } = require("hardhat");
-const { deployPromise, getTestProperties, main } = require("../scripts/deploy");
+const {
+  deployPromise,
+  getTestProperties,
+  main,
+} = require("../scripts/deployHelper");
 const hoursToSeconds = require("date-fns/hoursToSeconds");
 const { BigNumber } = require("ethers");
 const {

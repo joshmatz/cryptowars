@@ -9,7 +9,7 @@ export const JobsContractAddress =
 export const TokenContractAddress =
   process.env.NEXT_PUBLIC_ERC20_CONTRACT_ADDRESS;
 export const ItemContractAddress =
-  process.env.NEXT_PUBLIC_ITEM_CONTRACT_ADDRESS;
+  process.env.NEXT_PUBLIC_ITEMS_CONTRACT_ADDRESS;
 
 export const propertyTypeNames = [
   "xTreme Staking",

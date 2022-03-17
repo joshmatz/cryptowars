@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.4;
+pragma solidity ^0.8.13;
 
 import "hardhat/console.sol";
 
@@ -164,13 +164,12 @@ contract CryptoNYJobs is Ownable {
         );
 
         if (job.rewardItemIds.length != 0) {
+            uint256[4] memory rewardData = [0, characterId, newExp, runs];
             for (uint256 i = 0; i < job.rewardItemIds.length; i++) {
+                rewardData[0] = job.rewardItemIds[i];
                 IItems(itemsContract).rewardItemToCharacter(
                     msg.sender,
-                    characterId,
-                    job.rewardItemIds[i],
-                    newExp,
-                    runs
+                    rewardData
                 );
             }
         }

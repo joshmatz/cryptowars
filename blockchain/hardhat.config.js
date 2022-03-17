@@ -4,7 +4,8 @@ require("@nomiclabs/hardhat-etherscan");
 require("@nomiclabs/hardhat-waffle");
 require("hardhat-gas-reporter");
 require("solidity-coverage");
-const { types } = require("hardhat/config");
+// const { network } = require("hardhat");
+const { types, task } = require("hardhat/config");
 
 // When using the hardhat network, you may choose to fork Fuji or Avalanche Mainnet
 // This will allow you to debug contracts using the hardhat network while keeping the current network state
@@ -45,7 +46,7 @@ task("miningMode", "Changes the mining mode of hardhat")
     15000,
     types.int
   )
-  .setAction(async ({ automine, interval }, href) => {
+  .setAction(async ({ automine, interval }) => {
     await network.provider.send("evm_setAutomine", [automine]);
     console.log({ automine });
     if (!automine) {
@@ -60,6 +61,60 @@ task("increaseTime", "Increases the time on the network")
     await network.provider.send("evm_increaseTime", [time * 60]);
   });
 
+task("addOwnerAsGameContract", "Adds the owner as a game contract")
+  .addParam(
+    "type",
+    "The contract type to which you're appending the owner",
+    "CryptoChar",
+    types.string
+  )
+  .addParam("address", "Address of the contract", "0x0", types.address)
+  .setAction(async ({ type, address }) => {
+    const accounts = await hre.ethers.getSigners();
+
+    const contract = await hre.ethers.getContractAt(type, address);
+    await contract.addGameContract(accounts[0].address);
+  });
+
+task("updateCharacterAttributes", "Updates the character attributes")
+  .addParam("address", "Address of the contract", "0x0", types.address)
+  .addOptionalParam("characterId", "The character id", 0, types.int)
+  .addOptionalParam("experience", "The experience", 0, types.int)
+  .addOptionalParam("sp", "The skill points", 0, types.int)
+  .addOptionalParam("health", "The health", 0, types.int)
+  .addOptionalParam("energy", "The energy", 0, types.int)
+  .addOptionalParam("stamina", "The stamina", 0, types.int)
+  .setAction(
+    async ({
+      address,
+      characterId,
+      experience,
+      sp,
+      health,
+      energy,
+      stamina,
+    }) => {
+      const accounts = await hre.ethers.getSigners();
+
+      const characterContract = await hre.ethers.getContractAt(
+        "CryptoChar",
+        address
+      );
+      const gameContracts = await characterContract.gameContracts(
+        accounts[0].address
+      );
+      console.log({ gameContracts, experience });
+      await characterContract.updateCurrentAttributes(
+        characterId,
+        experience,
+        stamina,
+        energy,
+        health,
+        sp
+      );
+    }
+  );
+
 // You need to export an object to set up your config
 // Go to https://hardhat.org/config/ to learn more
 
@@ -68,7 +123,7 @@ task("increaseTime", "Increases the time on the network")
  */
 module.exports = {
   solidity: {
-    version: "0.8.4",
+    version: "0.8.13",
     settings: {
       optimizer: {
         enabled: true,

@@ -113,6 +113,19 @@ export default [
   },
   {
     inputs: [],
+    name: "HEALTH_REGEN_SECONDS",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
     name: "STAMINA_REGEN_SECONDS",
     outputs: [
       {
@@ -213,7 +226,7 @@ export default [
         type: "string",
       },
       {
-        internalType: "enum CryptoChar.CharacterClass",
+        internalType: "enum CharacterClass",
         name: "charClass",
         type: "uint8",
       },
@@ -255,7 +268,7 @@ export default [
             type: "uint256",
           },
         ],
-        internalType: "struct CryptoChar.Attribute",
+        internalType: "struct Attribute",
         name: "health",
         type: "tuple",
       },
@@ -282,7 +295,7 @@ export default [
             type: "uint256",
           },
         ],
-        internalType: "struct CryptoChar.Attribute",
+        internalType: "struct Attribute",
         name: "energy",
         type: "tuple",
       },
@@ -309,7 +322,7 @@ export default [
             type: "uint256",
           },
         ],
-        internalType: "struct CryptoChar.Attribute",
+        internalType: "struct Attribute",
         name: "stamina",
         type: "tuple",
       },
@@ -336,7 +349,7 @@ export default [
             type: "uint256",
           },
         ],
-        internalType: "struct CryptoChar.Attribute",
+        internalType: "struct Attribute",
         name: "attack",
         type: "tuple",
       },
@@ -363,7 +376,7 @@ export default [
             type: "uint256",
           },
         ],
-        internalType: "struct CryptoChar.Attribute",
+        internalType: "struct Attribute",
         name: "defense",
         type: "tuple",
       },
@@ -389,7 +402,7 @@ export default [
         type: "string",
       },
       {
-        internalType: "enum CryptoChar.CharacterClass",
+        internalType: "enum CharacterClass",
         name: "characterClass",
         type: "uint8",
       },
@@ -432,6 +445,25 @@ export default [
         internalType: "address",
         name: "",
         type: "address",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "uint256",
+        name: "characterId",
+        type: "uint256",
+      },
+    ],
+    name: "getCharacterStats",
+    outputs: [
+      {
+        internalType: "uint256[7]",
+        name: "",
+        type: "uint256[7]",
       },
     ],
     stateMutability: "view",
@@ -539,6 +571,19 @@ export default [
       },
     ],
     name: "regenerateEnergy",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "uint256",
+        name: "characterId",
+        type: "uint256",
+      },
+    ],
+    name: "regenerateHealth",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",
@@ -942,6 +987,11 @@ export default [
       {
         internalType: "uint256",
         name: "characterId",
+        type: "uint256",
+      },
+      {
+        internalType: "uint256",
+        name: "health",
         type: "uint256",
       },
       {

@@ -1,10 +1,10 @@
-const { ethers } = require("hardhat");
-const weaponsString = require("./weaponsString");
-const armorsString = require("./armorsString");
-const boostsString = require("./boostsString");
-const shillsString = require("./shillsString");
-const vehiclesString = require("./vehiclesString");
-const consumablesString = require("./consumablesString");
+const { ethers } = require("ethers");
+const weaponsString = require("../constants/items/weaponsString");
+const armorsString = require("../constants/items/armorsString");
+const boostsString = require("../constants/items/boostsString");
+const shillsString = require("../constants/items/shillsString");
+const vehiclesString = require("../constants/items/vehiclesString");
+const consumablesString = require("../constants/items/consumablesString");
 
 const weaponClass = 1;
 

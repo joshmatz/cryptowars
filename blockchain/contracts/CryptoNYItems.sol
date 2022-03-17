@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.4;
+pragma solidity ^0.8.13;
 
 import "hardhat/console.sol";
 
@@ -125,19 +125,18 @@ contract CryptoNYItems is ERC721, ERC721Enumerable, Ownable {
         return characterItems[characterId][itemTypeId].at(itemIndex);
     }
 
+    // [job.rewardItemIds[i], characterId, newExp, runs]
+
     function rewardItemToCharacter(
         address _caller,
-        uint256 _itemTypeId,
-        uint256 _characterId,
-        uint256 _seed,
-        uint256 _attempts
+        uint256[4] calldata _rewardData
     ) public {
         require(
-            itemTypes[_itemTypeId].class != ItemClass.IS_NOT_SET,
+            itemTypes[_rewardData[0]].class != ItemClass.IS_NOT_SET,
             "CryptoNYItems.createItemForCharacter.invalidItemTypeId"
         );
         uint256 _rarityChance = itemRarityWeights[
-            uint256(itemTypes[_itemTypeId].rarity)
+            uint256(itemTypes[_rewardData[0]].rarity)
         ];
 
         // console.log("_rarityChance", _rarityChance);
@@ -161,10 +160,10 @@ contract CryptoNYItems is ERC721, ERC721Enumerable, Ownable {
 
         // console.log(_attempts, successes);
 
-        for (uint256 i = 0; i < _attempts; i++) {
-            uint256 _rarityRoll = _random(_seed + i, 1000);
+        for (uint256 i = 0; i < _rewardData[3]; i++) {
+            uint256 _rarityRoll = _random(_rewardData[2] + i, 1000);
             if (_rarityRoll > _rarityChance) {
-                mintItemToCharacter(_caller, _itemTypeId, _characterId);
+                mintItemToCharacter(_caller, _rewardData[0], _rewardData[1]);
             }
         }
     }

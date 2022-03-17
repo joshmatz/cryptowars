@@ -7,9 +7,9 @@ const hre = require("hardhat");
 const hoursToSeconds = require("date-fns/hoursToSeconds");
 const { ethers } = require("hardhat");
 const { BigNumber } = require("ethers");
-const { jobTiers } = require("../test/utils/jobs");
-const { propertyTypes } = require("../test/utils/properties");
-const { itemTypes } = require("../test/utils/items");
+const { jobTiers } = require("shared/utils/jobs");
+const { propertyTypes } = require("shared/utils/properties");
+const { itemTypes } = require("shared/utils/items");
 
 const getItemTypeId = (itemTypeName) => {
   const found = itemTypes.findIndex(
@@ -213,6 +213,36 @@ const deployItemContract = async (characterAddress) => {
   return itemContract.address;
 };
 
+const deployFightContract = async (characterAddress, walletAddress) => {
+  // address _charContract,
+  // address _walletContract,
+  // address _itemsContract
+
+  if (process.env.FIGHT_CONTRACT_ADDRESS) {
+    console.log("Skipping Fight Deployment");
+    return process.env.FIGHT_CONTRACT_ADDRESS;
+  }
+
+  const CryptoNYFight = await ethers.getContractFactory("CryptoNYFight");
+  const fightContract = await CryptoNYFight.deploy(
+    characterAddress,
+    walletAddress
+  );
+  transactions.push(await fightContract.deployed());
+  console.log(`FIGHT_CONTRACT_ADDRESS=${fightContract.address}`);
+
+  const characterContract = await ethers.getContractAt(
+    "CryptoChar",
+    characterAddress
+  );
+  transactions.push(
+    await characterContract.addGameContract(fightContract.address)
+  );
+  console.log("Fight approved in CryptoChar");
+
+  return fightContract.address;
+};
+
 async function main({
   setProperties = true,
   setItems = true,
@@ -243,6 +273,7 @@ async function main({
   let propertiesAddress;
   let jobsAddress;
   let itemsAddress;
+  let fightAddress;
 
   characterAddress = await deployCharacterContract();
   ERC20Address = await deployCryptoNYERC20Contract();
@@ -257,6 +288,7 @@ async function main({
     walletAddress,
     itemsAddress
   );
+  fightAddress = await deployFightContract(characterAddress, walletAddress);
 
   /**
    * Set up wallet
@@ -388,6 +420,7 @@ async function main({
   console.log(`NEXT_PUBLIC_JOBS_CONTRACT_ADDRESS=${jobsAddress}`);
   console.log(`NEXT_PUBLIC_ERC20_CONTRACT_ADDRESS=${ERC20Address}`);
   console.log(`NEXT_PUBLIC_ITEMS_CONTRACT_ADDRESS=${itemsAddress}`);
+  console.log(`NEXT_PUBLIC_FIGHT_CONTRACT_ADDRESS=${fightAddress}`);
 
   return {
     owner,
@@ -398,6 +431,7 @@ async function main({
     jobsAddress,
     ERC20Address,
     itemsAddress,
+    fightAddress,
     propertyTypes,
   };
 }

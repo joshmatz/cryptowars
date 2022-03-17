@@ -71,50 +71,53 @@ const PropertyRow = ({ characterId, propertyTypeIndex }) => {
     }
   );
 
-  const { mutate: collectRevenue } = useContractMutation(
-    () => propertiesContract.collectRevenue(characterId, characterProperty?.id),
-    {
-      notificationSuccess: {
-        title: "Collection successful!",
-        description: "Now, back to business.",
+  const { mutate: collectRevenue, status: collectingStatus } =
+    useContractMutation(
+      () =>
+        propertiesContract.collectRevenue(characterId, characterProperty?.id),
+      {
+        notificationSuccess: {
+          title: "Collection successful!",
+          description: "Now, back to business.",
+        },
+        notificationProgress: {
+          title: "Waiting for transaction...",
+          description: `${propertyTypeNames[propertyTypeIndex]} revenue is on its way.`,
+        },
       },
-      notificationProgress: {
-        title: "Waiting for transaction...",
-        description: `${propertyTypeNames[propertyTypeIndex]} revenue is on its way.`,
-      },
-    },
-    {
-      onSuccess: () => {
-        refetch();
-        refetchTokens();
-      },
-    }
-  );
+      {
+        onSuccess: () => {
+          refetch();
+          refetchTokens();
+        },
+      }
+    );
 
-  const { mutate: upgradeProperty } = useContractMutation(
-    () =>
-      propertiesContract.upgradeProperty(
-        characterId,
-        characterProperty?.id,
-        upgradesToBuy
-      ),
-    {
-      notificationSuccess: {
-        title: "Renovations complete!",
-        description: "Now, back to business.",
+  const { mutate: upgradeProperty, status: upgradingStatus } =
+    useContractMutation(
+      () =>
+        propertiesContract.upgradeProperty(
+          characterId,
+          characterProperty?.id,
+          upgradesToBuy
+        ),
+      {
+        notificationSuccess: {
+          title: "Renovations complete!",
+          description: "Now, back to business.",
+        },
+        notificationProgress: {
+          title: "Waiting for transaction...",
+          description: `${propertyTypeNames[propertyTypeIndex]} is undergoing renovations...`,
+        },
       },
-      notificationProgress: {
-        title: "Waiting for transaction...",
-        description: `${propertyTypeNames[propertyTypeIndex]} is undergoing renovations...`,
-      },
-    },
-    {
-      onSuccess: () => {
-        refetch();
-        refetchTokens();
-      },
-    }
-  );
+      {
+        onSuccess: () => {
+          refetch();
+          refetchTokens();
+        },
+      }
+    );
 
   const { time, percentFull } = useTimer(
     characterProperty?.lastCollected,
@@ -185,7 +188,8 @@ const PropertyRow = ({ characterId, propertyTypeIndex }) => {
               onClick={upgradeProperty}
               disabled={
                 !isCapableOfUpgrading ||
-                characterProperty.level?.eq(propertyType.maxLevel)
+                characterProperty.level?.eq(propertyType.maxLevel) ||
+                upgradingStatus === "loading"
               }
             >
               {characterProperty.level?.eq(propertyType.maxLevel)
@@ -228,7 +232,10 @@ const PropertyRow = ({ characterId, propertyTypeIndex }) => {
           </Button>
         </Stack>
       ) : (
-        <Button onClick={purchaseProperty} disabled={!isCapableOfPurchasing}>
+        <Button
+          onClick={purchaseProperty}
+          disabled={!isCapableOfPurchasing || collectingStatus === "loading"}
+        >
           Purchase: $
           {propertyType?.cost ? formatNumber(propertyType.cost) : null}
         </Button>

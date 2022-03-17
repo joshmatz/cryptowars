@@ -7,7 +7,7 @@ const {
 } = require("../scripts/deployHelper");
 const hoursToSeconds = require("date-fns/hoursToSeconds");
 const { BigNumber } = require("ethers");
-const { jobTiers } = require("./utils/jobs");
+const { jobTiers } = require("shared/utils/jobs");
 
 describe("cryptoWars.jobs", function () {
   let cryptoChar;
@@ -268,9 +268,12 @@ describe("cryptoWars.jobs", function () {
         const requiredJobsForLevelOne =
           (7 - previousCharacter.experience.toNumber()) / experiencePerJob;
 
-        for (let i = 0; i < requiredJobsForLevelOne; i++) {
-          await cryptoNyJobs.completeJob(ownerCharacterId, 0, 0, 1);
-        }
+        await cryptoNyJobs.completeJob(
+          ownerCharacterId,
+          0,
+          0,
+          requiredJobsForLevelOne
+        );
 
         jobExperience = await cryptoNyJobs.jobExperience(
           ownerCharacterId,
@@ -278,20 +281,40 @@ describe("cryptoWars.jobs", function () {
           0
         );
 
+        // energy: [
+        //   BigNumber { value: "9" },
+        //   BigNumber { value: "10" },
+        //   BigNumber { value: "10" },
+        //   BigNumber { value: "1661912941" },
+        //   current: BigNumber { value: "9" },
+        //   characterMax: BigNumber { value: "10" },
+        //   equippedMax: BigNumber { value: "10" },
+
+        // energy: [
+        //   BigNumber { value: "3" },
+        //   BigNumber { value: "10" },
+        //   BigNumber { value: "10" },
+        //   BigNumber { value: "1661912941" },
+        //   current: BigNumber { value: "3" },
+        //   characterMax: BigNumber { value: "10" },
+        //   equippedMax: BigNumber { value: "10" },
+        //   lastCollected: BigNumber { value: "1661912941" }
         newCharacter = await cryptoChar.characters(ownerCharacterId);
+        // console.log({ previousCharacter, newCharacter });
       });
 
       it("should level up character", async () => {
         expect(newCharacter.level).to.be.equal(previousCharacter.level.add(1));
       });
 
-      it("should add 1 skillpoint", () => {
+      it("should add 5 skillpoint", () => {
         expect(newCharacter.skillPoints).to.be.equal(
-          previousCharacter.skillPoints.add(1)
+          previousCharacter.skillPoints.add(5)
         );
       });
 
       it("should have 3 energy remaining", () => {
+        console.log(previousCharacter);
         expect(newCharacter.energy.current).to.be.equal(3);
       });
 
@@ -320,7 +343,6 @@ describe("cryptoWars.jobs", function () {
       this.beforeAll(async () => {
         const lastBlock = await ethers.provider.getBlock();
         previousCharacter = await cryptoChar.characters(ownerCharacterId);
-        console.log("fastforwarding...");
         await ethers.provider.send("evm_setNextBlockTimestamp", [
           previousCharacter.energy.lastCollected.add(60 * 50).toNumber(),
         ]);
@@ -374,9 +396,9 @@ describe("cryptoWars.jobs", function () {
         expect(newCharacter.level).to.be.equal(previousCharacter.level.add(4));
       });
 
-      it("should add 7 skillpoints", () => {
+      it("should add 23 skillpoints", () => {
         expect(newCharacter.skillPoints).to.be.equal(
-          previousCharacter.skillPoints.add(7)
+          previousCharacter.skillPoints.add(4 * 5 + 3)
         );
       });
     });
@@ -417,6 +439,7 @@ describe("cryptoWars.jobs", function () {
         previousCharacter = await cryptoChar.characters(ownerCharacterId);
         await cryptoChar.useSkillPoints(
           ownerCharacterId,
+          0,
           previousCharacter.skillPoints,
           0,
           0,
@@ -485,6 +508,7 @@ describe("cryptoWars.jobs", function () {
         // use skill points on energy
         await cryptoChar.useSkillPoints(
           ownerCharacterId,
+          0,
           newCharacter.skillPoints,
           0,
           0,
@@ -495,16 +519,16 @@ describe("cryptoWars.jobs", function () {
         newCharacter = await cryptoChar.characters(ownerCharacterId);
       });
 
-      it("should have 25 energy.current", () => {
-        expect(newCharacter.energy.current).to.be.equal(25);
+      it("should have 61 energy.current", () => {
+        expect(newCharacter.energy.current).to.be.equal(61);
       });
 
-      it("should have 25 energy.characterMax", () => {
-        expect(newCharacter.energy.characterMax).to.be.equal(25);
+      it("should have 61 energy.characterMax", () => {
+        expect(newCharacter.energy.characterMax).to.be.equal(61);
       });
 
-      it("should have 25 energy.equippedMax", () => {
-        expect(newCharacter.energy.equippedMax).to.be.equal(25);
+      it("should have 61 energy.equippedMax", () => {
+        expect(newCharacter.energy.equippedMax).to.be.equal(61);
       });
     });
   });
@@ -528,12 +552,12 @@ describe("cryptoWars.jobs", function () {
       characterJobTier = await cryptoNyJobs.characterJobTier(ownerCharacterId);
     });
 
-    it("should have 25 energy.characterMax", () => {
-      expect(newCharacter.energy.characterMax).to.be.equal(25);
+    it("should have 61 energy.characterMax", () => {
+      expect(newCharacter.energy.characterMax).to.be.equal(61);
     });
 
-    it("should have 25 energy.equippedMax", () => {
-      expect(newCharacter.energy.equippedMax).to.be.equal(25);
+    it("should have 61 energy.equippedMax", () => {
+      expect(newCharacter.energy.equippedMax).to.be.equal(61);
     });
 
     it("should have increased characterExperience tier", () => {
@@ -561,12 +585,12 @@ describe("cryptoWars.jobs", function () {
       characterJobTier = await cryptoNyJobs.characterJobTier(ownerCharacterId);
     });
 
-    it("should have 25 energy.characterMax", () => {
-      expect(newCharacter.energy.characterMax).to.be.equal(25);
+    it("should have 61 energy.characterMax", () => {
+      expect(newCharacter.energy.characterMax).to.be.equal(61);
     });
 
-    it("should have 25 energy.equippedMax", () => {
-      expect(newCharacter.energy.equippedMax).to.be.equal(25);
+    it("should have 61 energy.equippedMax", () => {
+      expect(newCharacter.energy.equippedMax).to.be.equal(61);
     });
 
     it("should have increased characterExperience tier", () => {
@@ -595,6 +619,7 @@ describe("cryptoWars.jobs", function () {
         );
         await cryptoChar.useSkillPoints(
           ownerCharacterId,
+          0,
           previousCharacter.skillPoints,
           0,
           0,
@@ -803,6 +828,7 @@ describe("cryptoWars.jobs", function () {
             );
             await cryptoChar.useSkillPoints(
               ownerCharacterId,
+              0,
               previousCharacter.skillPoints,
               0,
               0,
@@ -851,6 +877,7 @@ describe("cryptoWars.jobs", function () {
             );
             await cryptoChar.useSkillPoints(
               ownerCharacterId,
+              0,
               previousCharacter.skillPoints,
               0,
               0,
@@ -858,7 +885,7 @@ describe("cryptoWars.jobs", function () {
             );
           }
           previousCharacter = await cryptoChar.characters(ownerCharacterId);
-        } while (previousCharacter.energy.current.lt(155));
+        } while (previousCharacter.energy.current.lt(160));
         previousCharacter = await cryptoChar.characters(ownerCharacterId);
 
         await ethers.provider.send("evm_setNextBlockTimestamp", [
@@ -876,7 +903,6 @@ describe("cryptoWars.jobs", function () {
         previousCharacterBalance = await cryptoNyWallet.balances(
           ownerCharacterId
         );
-
         await cryptoNyJobs.completeJob(ownerCharacterId, jobTier, jobId, runs);
 
         exp = await cryptoNyJobs.jobExperience(
@@ -889,9 +915,15 @@ describe("cryptoWars.jobs", function () {
         characterBalance = await cryptoNyWallet.balances(ownerCharacterId);
       });
 
-      it("should increase skill points twice", () => {
+      it("should increase skill points for level and job tier", () => {
+        console.log({ previousCharacter, newCharacter, previousExp, exp });
         expect(newCharacter.skillPoints).to.be.equal(
-          previousCharacter.skillPoints.add(2)
+          previousCharacter.skillPoints.add(
+            newCharacter.level
+              .sub(previousCharacter.level)
+              .mul(5)
+              .add(exp.level.sub(previousExp.level))
+          )
         );
       });
     });
@@ -937,8 +969,13 @@ describe("cryptoWars.jobs", function () {
       });
 
       it("should increase skill points once to max", () => {
+        console.log({ previousExp, exp });
         expect(newCharacter.skillPoints).to.be.equal(
-          previousCharacter.skillPoints.add(1)
+          newCharacter.level
+            .sub(previousCharacter.level)
+            .mul(5)
+            .add(exp.level.sub(previousExp.level))
+            .add(previousCharacter.skillPoints)
         );
       });
     });

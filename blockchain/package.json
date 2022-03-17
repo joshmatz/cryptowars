@@ -24,6 +24,7 @@
   },
   "dependencies": {
     "@openzeppelin/contracts": "^4.5.0",
-    "date-fns": "^2.28.0"
+    "date-fns": "^2.28.0",
+    "shared": "file:../shared"
   }
 }

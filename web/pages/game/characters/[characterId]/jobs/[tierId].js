@@ -12,8 +12,10 @@ import { useState } from "react";
 import JobTierList from "../../../../../components/modules/JobTierList";
 import useContractMutation from "../../../../../components/hooks/useContractMutation";
 import useCharacterTokens from "../../../../../components/hooks/useCharacterTokens";
+import { useQueryClient } from "react-query";
 
 const JobRow = ({ job, tierId, jobIndex, characterId }) => {
+  const queryClient = useQueryClient();
   const jobsContract = useJobsContract();
   const [jobRuns, setJobRuns] = useState(1);
   const { data: character, refetch: refetchCharacter } =
@@ -39,6 +41,7 @@ const JobRow = ({ job, tierId, jobIndex, characterId }) => {
     },
     {
       onSuccess: () => {
+        queryClient.invalidateQueries(`unlockedJobTiers-${characterId}`);
         refetchCharacter();
         refetchJobExperience();
         refetchTokens();
@@ -75,6 +78,11 @@ const JobRow = ({ job, tierId, jobIndex, characterId }) => {
         alignItems="center"
         justifyContent={"space-between"}
         direction={{ base: "column", sm: "row" }}
+        as="form"
+        onSubmit={(e) => {
+          e.preventDefault();
+          completeJob();
+        }}
       >
         <Box
           flex="1 0 auto"
@@ -108,7 +116,6 @@ const JobRow = ({ job, tierId, jobIndex, characterId }) => {
             </>
           )}
         </Box>
-
         {character.energy.adjustedCurrent.lt(job.energy) ? null : (
           <Input
             type="number"
@@ -123,7 +130,7 @@ const JobRow = ({ job, tierId, jobIndex, characterId }) => {
             character.energy.adjustedCurrent.lt(job.energy * jobRuns) ||
             isLoading
           }
-          onClick={completeJob}
+          type="submit"
         >
           {character.energy.adjustedCurrent.lt(job.energy * jobRuns)
             ? `-${BigNumber.from(job.energy * jobRuns)

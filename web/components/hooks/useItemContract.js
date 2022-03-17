@@ -3,7 +3,7 @@ import { useMemo } from "react";
 import { useWeb3Context } from "../Web3ContextProvider";
 import { ItemContractAddress } from "../../constants/game";
 import ItemContractAbi from "../../constants/contracts/ItemContractAbi";
-console.log({ ItemContractAddress });
+
 const useItemContract = () => {
   const {
     web3State: { signer, isCorrectChain },

@@ -7,8 +7,8 @@ const {
 } = require("../scripts/deployHelper");
 const hoursToSeconds = require("date-fns/hoursToSeconds");
 const { BigNumber } = require("ethers");
-const { jobTiers } = require("./utils/jobs");
-const things = require("./utils/items");
+const { jobTiers } = require("shared/utils/jobs");
+const things = require("shared/utils/items");
 
 const CharacterArtifact = artifacts.readArtifactSync("CryptoChar");
 const ItemsArtifact = artifacts.readArtifactSync("CryptoNYItems");

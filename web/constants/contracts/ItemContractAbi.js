@@ -586,24 +586,9 @@ export default [
         type: "address",
       },
       {
-        internalType: "uint256",
-        name: "_itemTypeId",
-        type: "uint256",
-      },
-      {
-        internalType: "uint256",
-        name: "_characterId",
-        type: "uint256",
-      },
-      {
-        internalType: "uint256",
-        name: "_seed",
-        type: "uint256",
-      },
-      {
-        internalType: "uint256",
-        name: "_attempts",
-        type: "uint256",
+        internalType: "uint256[4]",
+        name: "_rewardData",
+        type: "uint256[4]",
       },
     ],
     name: "rewardItemToCharacter",

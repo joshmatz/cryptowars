@@ -37,7 +37,20 @@ const useContractMutation = (
       duration: null,
       isClosable: true,
     });
-    await tx.wait(1);
+    try {
+      await tx.wait(1);
+    } catch (e) {
+      console.log(e);
+      toast.close(ref.current);
+      toast({
+        title: "Malfunction in the system...",
+        description: "See dev tools for more information.",
+        status: "error",
+        duration: 9000,
+        isClosable: true,
+      });
+      return;
+    }
     toast.close(ref.current);
     toast({
       title: notificationSuccess.title,

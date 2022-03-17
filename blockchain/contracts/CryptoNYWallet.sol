@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.4;
+pragma solidity ^0.8.13;
 
 import "hardhat/console.sol";
 
@@ -8,25 +8,8 @@ import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 
-interface ICharacter {
-    function ownerOf(uint256 _tokenId) external view returns (address);
-}
-
-interface ICurrency {
-    function mint(address _to, uint256 _tokenId) external;
-
-    function burn(address _from, uint256 _tokenId) external;
-
-    function transfer(address _to, uint256 _amount) external;
-
-    function transferFrom(
-        address _from,
-        address _to,
-        uint256 _amount
-    ) external;
-
-    function balanceOf(address _owner) external view returns (uint256);
-}
+import "./CryptoNYERC20.sol";
+import "./Character.sol";
 
 contract CryptoNYWallet is Ownable {
     using SafeMath for uint256;
@@ -51,13 +34,13 @@ contract CryptoNYWallet is Ownable {
 
     modifier isCharacterOwner(uint256 characterId) {
         require(
-            ICharacter(characterContract).ownerOf(characterId) == msg.sender,
+            CryptoChar(characterContract).ownerOf(characterId) == msg.sender,
             "CryptoNyWallet.characterOwner"
         );
         _;
 
         require(
-            ICharacter(characterContract).ownerOf(characterId) == msg.sender,
+            CryptoChar(characterContract).ownerOf(characterId) == msg.sender,
             "CryptoNyWallet.characterOwner"
         );
     }
@@ -73,11 +56,11 @@ contract CryptoNYWallet is Ownable {
         require(amount <= balances[characterId], "CryptoNyWallet.balance");
         balances[characterId] = balances[characterId] - amount;
 
-        ICurrency(currencyContract).burn(
+        CryptoNYERC20(currencyContract).burn(
             address(this),
             amount.mul(15).div(100)
         );
-        ICurrency(currencyContract).transfer(
+        CryptoNYERC20(currencyContract).transfer(
             msg.sender,
             amount.mul(85).div(100)
         );
@@ -92,7 +75,7 @@ contract CryptoNYWallet is Ownable {
         // Transfer to contract prior to adding
         // -- will do necessary checks
         // in the ERC 20 contract
-        ICurrency(currencyContract).transferFrom(
+        CryptoNYERC20(currencyContract).transferFrom(
             msg.sender,
             address(this),
             amount
@@ -111,7 +94,7 @@ contract CryptoNYWallet is Ownable {
         require(amount > 0, "CryptoNyWallet.invalidAmount");
 
         balances[characterId] = balances[characterId] + amount;
-        ICurrency(currencyContract).mint(address(this), amount);
+        CryptoNYERC20(currencyContract).mint(address(this), amount);
     }
 
     function burnFromCharacter(uint256 characterId, uint256 amount)
@@ -122,6 +105,6 @@ contract CryptoNYWallet is Ownable {
         require(amount <= balances[characterId], "CryptoNyWallet.balance");
 
         balances[characterId] = balances[characterId] - amount;
-        ICurrency(currencyContract).burn(address(this), amount);
+        CryptoNYERC20(currencyContract).burn(address(this), amount);
     }
 }

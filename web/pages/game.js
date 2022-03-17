@@ -27,7 +27,9 @@ const SimpleCharacterBar = ({ characterId }) => {
 
   return (
     <>
-      <Td>{character?.name}</Td>
+      <Td>
+        {character?.name} (L{character?.level.toString()})
+      </Td>
       <Td>${formatNumber(tokens)}</Td>
       <Td>
         {character?.energy?.adjustedCurrent.toString()} /{" "}

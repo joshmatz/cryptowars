@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.4;
+pragma solidity ^0.8.13;
 
 import "hardhat/console.sol";
 
@@ -10,44 +10,45 @@ import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 import "@openzeppelin/contracts/utils/Base64.sol";
 
+enum CharacterClass {
+    BRAIN,
+    FIGHTER,
+    CHARM
+}
+
+struct Character {
+    string name;
+    CharacterClass charClass;
+    uint256 currentRegion;
+    uint256 experience;
+    uint256 level;
+    Attribute health;
+    Attribute energy;
+    Attribute stamina;
+    Attribute attack;
+    Attribute defense;
+    uint256 skillPoints;
+    uint256 lastTravelTime;
+}
+
+struct Attribute {
+    uint256 current;
+    uint256 characterMax;
+    uint256 equippedMax;
+    uint256 lastCollected;
+}
+
+struct Region {
+    uint256 requiredLevel;
+    uint256 baseTravelTime;
+}
+
 contract CryptoChar is ERC721, ERC721Enumerable, Ownable {
     using SafeMath for uint256;
 
-    enum CharacterClass {
-        BRAIN,
-        FIGHTER,
-        CHARM
-    }
-
+    uint256 public constant HEALTH_REGEN_SECONDS = 300;
     uint256 public constant ENERGY_REGEN_SECONDS = 300;
     uint256 public constant STAMINA_REGEN_SECONDS = 300;
-
-    struct Attribute {
-        uint256 current;
-        uint256 characterMax;
-        uint256 equippedMax;
-        uint256 lastCollected;
-    }
-
-    struct Character {
-        string name;
-        CharacterClass charClass;
-        uint256 currentRegion;
-        uint256 experience;
-        uint256 level;
-        Attribute health;
-        Attribute energy;
-        Attribute stamina;
-        Attribute attack;
-        Attribute defense;
-        uint256 skillPoints;
-        uint256 lastTravelTime;
-    }
-
-    struct Region {
-        uint256 requiredLevel;
-        uint256 baseTravelTime;
-    }
 
     // TODO: This mapping should be by region so only when the character
     // is in the specific region can items be modified.
@@ -60,6 +61,10 @@ contract CryptoChar is ERC721, ERC721Enumerable, Ownable {
     address[] public regionItems;
 
     Region[] public regions;
+
+    // TODO: CurrentTokenId; increment when minting
+    //     uint256 public currentTokenId = 0;
+
     Character[] public characters;
 
     mapping(address => bool) public gameContracts;
@@ -136,11 +141,13 @@ contract CryptoChar is ERC721, ERC721Enumerable, Ownable {
 
     function useSkillPoints(
         uint256 characterId,
+        uint256 health,
         uint256 energy,
         uint256 stamina,
         uint256 attack,
         uint256 defense
     ) external onlyCharacterOwner(characterId) returns (uint256) {
+        require(health >= 0, "CryptoChar.useSkillPoints.health");
         require(energy >= 0, "CryptoChar.useSkillPoints.energy");
         require(stamina >= 0, "CryptoChar.useSkillPoints.stamina");
         require(attack >= 0, "CryptoChar.useSkillPoints.attack");
@@ -155,10 +162,15 @@ contract CryptoChar is ERC721, ERC721Enumerable, Ownable {
             "CryptoChar.useSkillPoints.inefficientSkillPoints"
         );
 
+        characters[characterId].skillPoints -= health;
         characters[characterId].skillPoints -= energy;
         characters[characterId].skillPoints -= stamina;
         characters[characterId].skillPoints -= attack;
         characters[characterId].skillPoints -= defense;
+
+        characters[characterId].health.current += health;
+        characters[characterId].health.equippedMax += health;
+        characters[characterId].health.characterMax += health;
 
         characters[characterId].energy.current += energy;
         characters[characterId].energy.characterMax += energy;
@@ -193,13 +205,9 @@ contract CryptoChar is ERC721, ERC721Enumerable, Ownable {
                 characters[characterId].stamina.current = characters[
                     characterId
                 ].stamina.equippedMax;
-                characters[characterId].stamina.lastCollected = block.timestamp;
-            } else {
-                // Only update to minimum timestamp
-                characters[characterId].stamina.lastCollected +=
-                    staminaRegen *
-                    (60 * 5);
             }
+
+            characters[characterId].stamina.lastCollected = block.timestamp;
         }
     }
 
@@ -219,13 +227,31 @@ contract CryptoChar is ERC721, ERC721Enumerable, Ownable {
                 characters[characterId].energy.current = characters[characterId]
                     .energy
                     .equippedMax;
-                characters[characterId].energy.lastCollected = block.timestamp;
-            } else {
-                // Only update to minimum timestamp
-                characters[characterId].energy.lastCollected +=
-                    energyRegen *
-                    ENERGY_REGEN_SECONDS;
             }
+
+            characters[characterId].energy.lastCollected = block.timestamp;
+        }
+    }
+
+    function regenerateHealth(uint256 characterId) public {
+        uint256 healthRegen = ((block.timestamp -
+            characters[characterId].health.lastCollected) /
+            HEALTH_REGEN_SECONDS);
+
+        if (healthRegen != 0) {
+            characters[characterId].health.current += healthRegen;
+
+            // Limit regen to maximum possible
+            if (
+                characters[characterId].health.current >
+                characters[characterId].health.equippedMax
+            ) {
+                characters[characterId].health.current = characters[characterId]
+                    .health
+                    .equippedMax;
+            }
+
+            characters[characterId].health.lastCollected = block.timestamp;
         }
     }
 
@@ -268,13 +294,35 @@ contract CryptoChar is ERC721, ERC721Enumerable, Ownable {
         if (health != 0) {
             if (health > 0) {
                 characters[characterId].health.current += uint256(health);
-            } else {
+
                 if (
-                    characters[characterId].health.current >= uint256(-health)
+                    characters[characterId].health.current >
+                    characters[characterId].health.equippedMax
                 ) {
-                    characters[characterId].health.current -= uint256(-health);
+                    characters[characterId].health.current = characters[
+                        characterId
+                    ].health.equippedMax;
+                }
+            } else {
+                regenerateHealth(characterId);
+
+                // If we're regenerating because they're being attacked
+                // (e.g., negative health being sent to this function)
+                // then we should reject the request if the character is still dead.
+                require(
+                    characters[characterId].health.current != 0,
+                    "CryptoChar.updateCurrentAttributes.dead"
+                );
+
+                uint256 reduceHealthBy = uint256(-health);
+
+                if (characters[characterId].health.current >= reduceHealthBy) {
+                    characters[characterId].health.current -= reduceHealthBy;
                 } else {
                     characters[characterId].health.current = 0;
+
+                    // Penalty for dieing.
+                    experience = int256(experience - int256(10));
                 }
             }
         }
@@ -296,19 +344,27 @@ contract CryptoChar is ERC721, ERC721Enumerable, Ownable {
             if (experience > 0) {
                 characters[characterId].experience += uint256(experience);
             } else {
-                characters[characterId].experience -= uint256(-experience);
+                uint256 reduceExperienceBy = uint256(-experience);
+
+                if (characters[characterId].experience >= reduceExperienceBy) {
+                    characters[characterId].experience -= reduceExperienceBy;
+                } else {
+                    characters[characterId].experience = 0;
+                }
             }
 
             uint256 previousLevel = characters[characterId].level;
-            characters[characterId].level = _sqrt(
+            uint256 newLevel = _sqrt(
                 (characters[characterId].experience * 4) / 25
             );
 
-            if (characters[characterId].level > previousLevel) {
-                // 1 SP per level
+            if (newLevel > previousLevel) {
+                characters[characterId].level = newLevel;
+
+                // 5 SP per level
                 characters[characterId].skillPoints +=
-                    characters[characterId].level -
-                    previousLevel;
+                    (newLevel - previousLevel) *
+                    5;
 
                 // Reset stamina
                 characters[characterId].stamina.current = characters[
@@ -316,6 +372,22 @@ contract CryptoChar is ERC721, ERC721Enumerable, Ownable {
                 ].stamina.equippedMax;
             }
         }
+    }
+
+    function getCharacterStats(uint256 characterId)
+        public
+        view
+        returns (uint256[7] memory)
+    {
+        return [
+            characters[characterId].level,
+            characters[characterId].attack.characterMax,
+            characters[characterId].attack.equippedMax,
+            characters[characterId].defense.characterMax,
+            characters[characterId].defense.equippedMax,
+            characters[characterId].stamina.current,
+            characters[characterId].health.equippedMax
+        ];
     }
 
     function _createCharacter(string memory name, CharacterClass characterClass)
@@ -327,7 +399,7 @@ contract CryptoChar is ERC721, ERC721Enumerable, Ownable {
                 characterClass,
                 0,
                 0,
-                1,
+                0,
                 // health
                 Attribute(100, 100, 100, block.timestamp),
                 // energy

@@ -3,8 +3,8 @@ const { waffle, ethers, artifacts } = require("hardhat");
 const { deployPromise, getTestProperties, main } = require("../scripts/deploy");
 const hoursToSeconds = require("date-fns/hoursToSeconds");
 const { BigNumber } = require("ethers");
-const { jobTiers } = require("./utils/jobs");
-const things = require("./utils/items");
+const { jobTiers } = require("shared/utils/jobs");
+const things = require("shared/utils/items");
 
 const CharacterArtifact = artifacts.readArtifactSync("CryptoChar");
 const ItemsArtifact = artifacts.readArtifactSync("CryptoNYItems");
@@ -394,13 +394,12 @@ describe("cryptoWars.items", function () {
         0,
         0
       );
-      await itemsContract.rewardItemToCharacter(
-        wallet.address,
+      await itemsContract.rewardItemToCharacter(wallet.address, [
         0,
         0,
         Math.floor(Math.random() * 1000) + 1,
-        50
-      );
+        50,
+      ]);
 
       newTotalSupply = await itemsContract.totalSupply();
 
