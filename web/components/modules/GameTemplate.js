@@ -87,7 +87,10 @@ const GameNavigation = () => {
 };
 
 const GameTemplate = ({ children, characterId }) => {
-  const { web3State: { isInitializing } = {} } = useWeb3Context();
+  const {
+    connect,
+    web3State: { isInitializing, isCorrectChain, connected } = {},
+  } = useWeb3Context();
   const {
     data: character,
     status: characterStatus,
@@ -100,6 +103,32 @@ const GameTemplate = ({ children, characterId }) => {
 
   if (characterId && !characterStatus === "loading") {
     return null;
+  }
+
+  let message = "Your wallet has disconnected.";
+  let action = "Switch";
+
+  if (!connected) {
+    message = "Connect your wallet to begin.";
+    action = "Connect";
+  }
+
+  if (!isCorrectChain || !connected) {
+    return (
+      <Modal isOpen>
+        <ModalOverlay />
+        <ModalContent>
+          <ModalBody>
+            <Box p={5} textAlign="center">
+              <Text mb={5}>{message}</Text>
+              <Button onClick={connect}>
+                {action} to {process.env.NEXT_PUBLIC_NETWORK_NAME}
+              </Button>
+            </Box>
+          </ModalBody>
+        </ModalContent>
+      </Modal>
+    );
   }
 
   if (characterId && !character) {

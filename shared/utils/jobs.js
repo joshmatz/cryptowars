@@ -5,7 +5,7 @@ const jobTiers = [];
 // 197 energy
 const firstTierJobs = [
   {
-    name: [],
+    name: "Funnel some crypto",
     energy: 1,
     payout: ethers.utils.parseEther("350"),
     experience: 1,
@@ -15,6 +15,7 @@ const firstTierJobs = [
     rewardItemTypeNames: [],
   },
   {
+    name: "Scam a granny",
     energy: 3,
     payout: ethers.utils.parseEther("700"),
     experience: 3,
@@ -24,6 +25,7 @@ const firstTierJobs = [
     rewardItemTypeNames: [],
   },
   {
+    name: "Shill some coins",
     energy: 2,
     payout: ethers.utils.parseEther("944"),
     experience: 2,
@@ -33,6 +35,7 @@ const firstTierJobs = [
     rewardItemTypeNames: [],
   },
   {
+    name: "Rough up a bro",
     energy: 2,
     payout: ethers.utils.parseEther("1260"),
     experience: 2,
@@ -42,6 +45,7 @@ const firstTierJobs = [
     rewardItemTypeNames: [],
   },
   {
+    name: "Grow your discord",
     energy: 9,
     payout: ethers.utils.parseEther("630"),
     experience: 11,
@@ -51,6 +55,7 @@ const firstTierJobs = [
     rewardItemTypeNames: [],
   },
   {
+    name: "Perform a hit",
     energy: 25,
     payout: ethers.utils.parseEther("1500"),
     experience: 1,
@@ -65,6 +70,7 @@ const firstTierJobs = [
 // 340 energy
 const secondTierJobs = [
   {
+    name: "Create a meme coin",
     energy: 2,
     payout: ethers.utils.parseEther("2280"),
     experience: 2,
@@ -74,6 +80,7 @@ const secondTierJobs = [
     rewardItemTypeNames: ["Butterfly Knife"],
   },
   {
+    name: "Scam a friend",
     energy: 3,
     payout: ethers.utils.parseEther("2623"),
     experience: 4,
@@ -83,6 +90,7 @@ const secondTierJobs = [
     rewardItemTypeNames: ["Pair of Brass Knuckles"],
   },
   {
+    name: "DDOS a competitor",
     energy: 3,
     payout: ethers.utils.parseEther("1840"),
     experience: 3,
@@ -92,6 +100,7 @@ const secondTierJobs = [
     rewardItemTypeNames: [".45 Revolver"],
   },
   {
+    name: "Collect on a loan",
     energy: 4,
     payout: ethers.utils.parseEther("2760"),
     experience: 5,
@@ -101,6 +110,7 @@ const secondTierJobs = [
     rewardItemTypeNames: ["Tactical Shotgun"],
   },
   {
+    name: "Skip KYC",
     energy: 8,
     payout: ethers.utils.parseEther("4600"),
     experience: 15,
@@ -110,6 +120,7 @@ const secondTierJobs = [
     rewardItemTypeNames: [],
   },
   {
+    name: "The Heist",
     energy: 13,
     payout: ethers.utils.parseEther("5750"),
     experience: 23,
@@ -119,6 +130,7 @@ const secondTierJobs = [
     rewardItemTypeNames: [],
   },
   {
+    name: "Hijack a server",
     energy: 7,
     payout: "2280",
     experience: 9,
@@ -153,6 +165,7 @@ jobTiers.push({
   level: ethers.utils.parseEther("9"),
   jobs: [
     {
+      name: "Destroy a competitor's warehouse",
       energy: 5,
       payout: ethers.utils.parseEther("7360"),
       experience: 5,
@@ -162,6 +175,7 @@ jobTiers.push({
       rewardItemTypeNames: ["C4"],
     },
     {
+      name: "Silence a snitch",
       energy: 5,
       payout: ethers.utils.parseEther("8096"),
       experience: 5,
@@ -171,6 +185,7 @@ jobTiers.push({
       rewardItemTypeNames: [],
     },
     {
+      name: "Create a false identity",
       energy: 5,
       payout: ethers.utils.parseEther("8740"),
       experience: 5,
@@ -180,6 +195,7 @@ jobTiers.push({
       rewardItemTypeNames: ["Automatic Rifle"],
     },
     {
+      name: "Hack a vault",
       energy: 6,
       payout: ethers.utils.parseEther("32200"),
       experience: 8,
@@ -189,6 +205,7 @@ jobTiers.push({
       rewardItemTypeNames: [],
     },
     {
+      name: "Create a botnet",
       energy: 5,
       payout: ethers.utils.parseEther("10120"),
       experience: 6,
@@ -198,6 +215,7 @@ jobTiers.push({
       rewardItemTypeNames: ["Semi-Automatic Shotgun"],
     },
     {
+      name: "Hack a bank",
       energy: 8,
       payout: ethers.utils.parseEther("20700"),
       experience: 13,
@@ -207,6 +225,7 @@ jobTiers.push({
       rewardItemTypeNames: ["Lucky Shamrock Medallion"],
     },
     {
+      name: "Steal some equipment",
       energy: 7,
       payout: ethers.utils.parseEther("22310"),
       experience: 9,
@@ -222,6 +241,7 @@ jobTiers.push({
   level: ethers.utils.parseEther("13"),
   jobs: [
     {
+      name: "Central Exchange Hack",
       energy: 22,
       payout: ethers.utils.parseEther("115000"),
       experience: 35,
@@ -231,6 +251,7 @@ jobTiers.push({
       rewardItemTypeNames: [],
     },
     {
+      name: "Launder coins",
       energy: 16,
       payout: ethers.utils.parseEther("55200"),
       experience: 25,
@@ -240,6 +261,7 @@ jobTiers.push({
       rewardItemTypeNames: ["Armored Truck"],
     },
     {
+      name: "Smuggle equipment",
       energy: 26,
       payout: ethers.utils.parseEther("517500"),
       experience: 41,
@@ -249,6 +271,7 @@ jobTiers.push({
       rewardItemTypeNames: [],
     },
     {
+      name: "Ransom a competitor's server",
       energy: 17,
       payout: ethers.utils.parseEther("690000"),
       experience: 38,
@@ -257,17 +280,8 @@ jobTiers.push({
       requiredItemTypeCounts: [],
       rewardItemTypeNames: [],
     },
-
     {
-      energy: 16,
-      payout: ethers.utils.parseEther("299000"),
-      experience: 25,
-      experiencePerTier: 250,
-      requiredItemTypeNames: [],
-      requiredItemTypeCounts: [],
-      rewardItemTypeNames: [],
-    },
-    {
+      name: "Wiretap officials",
       energy: 26,
       payout: ethers.utils.parseEther("2300000"),
       experience: 52,
@@ -277,6 +291,7 @@ jobTiers.push({
       rewardItemTypeNames: [],
     },
     {
+      name: "Rob Big Box Store",
       energy: 21,
       payout: ethers.utils.parseEther("333500"),
       experience: 29,
@@ -287,6 +302,7 @@ jobTiers.push({
       rewardItemTypeNames: ["Computer Set-Up"],
     },
     {
+      name: "Burn down a server farm",
       energy: 16,
       payout: ethers.utils.parseEther("299000"),
       experience: 25,
@@ -296,6 +312,7 @@ jobTiers.push({
       rewardItemTypeNames: [],
     },
     {
+      name: "Increase botnet size",
       energy: 8,
       payout: ethers.utils.parseEther("0"),
       experience: 14,
@@ -305,6 +322,7 @@ jobTiers.push({
       rewardItemTypeNames: [],
     },
     {
+      name: "Mint some tokens",
       energy: 8,
       payout: ethers.utils.parseEther("0"),
       experience: 14,
@@ -314,6 +332,7 @@ jobTiers.push({
       rewardItemTypeNames: [],
     },
     {
+      name: "Steal a wallet",
       energy: 8,
       payout: ethers.utils.parseEther("0"),
       experience: 14,
@@ -323,6 +342,7 @@ jobTiers.push({
       rewardItemTypeNames: [],
     },
     {
+      name: "Overload a server farm",
       energy: 8,
       payout: ethers.utils.parseEther("0"),
       experience: 14,
@@ -338,6 +358,7 @@ jobTiers.push({
   level: ethers.utils.parseEther("18"),
   jobs: [
     {
+      name: "Repel a botnet",
       energy: 11,
       payout: ethers.utils.parseEther("124200"),
       experience: 21,
@@ -347,6 +368,7 @@ jobTiers.push({
       rewardItemTypeNames: [],
     },
     {
+      name: "Disprupt rival DEX",
       energy: 13,
       payout: ethers.utils.parseEther("163300"),
       experience: 23,
@@ -356,6 +378,7 @@ jobTiers.push({
       rewardItemTypeNames: [],
     },
     {
+      name: "Takeover veCOIN",
       energy: 22,
       payout: ethers.utils.parseEther("276000"),
       experience: 35,
@@ -365,6 +388,7 @@ jobTiers.push({
       rewardItemTypeNames: [],
     },
     {
+      name: "Sell equipment to the government",
       energy: 22,
       payout: ethers.utils.parseEther("1150000"),
       experience: 41,
@@ -374,6 +398,7 @@ jobTiers.push({
       rewardItemTypeNames: [],
     },
     {
+      name: "Protect your server",
       energy: 31,
       payout: ethers.utils.parseEther("2530000"),
       experience: 58,
@@ -383,6 +408,7 @@ jobTiers.push({
       rewardItemTypeNames: [],
     },
     {
+      name: "Silence a competitor",
       energy: 31,
       payout: ethers.utils.parseEther("2875000"),
       experience: 58,
@@ -392,6 +418,7 @@ jobTiers.push({
       rewardItemTypeNames: [],
     },
     {
+      name: "Shutdown rival discord",
       energy: 35,
       payout: ethers.utils.parseEther("3450000"),
       experience: 67,
@@ -401,6 +428,7 @@ jobTiers.push({
       rewardItemTypeNames: [],
     },
     {
+      name: "Obtain blackmail material",
       energy: 24,
       payout: ethers.utils.parseEther("230000"),
       experience: 37,
@@ -410,6 +438,7 @@ jobTiers.push({
       rewardItemTypeNames: [],
     },
     {
+      name: "Frame a rival",
       energy: 23,
       payout: ethers.utils.parseEther("437000"),
       experience: 38,
@@ -425,6 +454,7 @@ jobTiers.push({
   level: ethers.utils.parseEther("25"),
   jobs: [
     {
+      name: "Steal a delivery",
       energy: 28,
       payout: ethers.utils.parseEther("1035000"),
       experience: 42,
@@ -434,6 +464,7 @@ jobTiers.push({
       rewardItemTypeNames: [],
     },
     {
+      name: "Force a competitor offline",
       energy: 31,
       payout: ethers.utils.parseEther("1150000"),
       experience: 46,
@@ -443,6 +474,7 @@ jobTiers.push({
       rewardItemTypeNames: [],
     },
     {
+      name: "Silence a snitch",
       energy: 22,
       payout: ethers.utils.parseEther("920000"),
       experience: 35,
@@ -452,6 +484,7 @@ jobTiers.push({
       rewardItemTypeNames: [],
     },
     {
+      name: "Modify bank records",
       energy: 26,
       payout: ethers.utils.parseEther("966000"),
       experience: 42,
@@ -461,6 +494,7 @@ jobTiers.push({
       rewardItemTypeNames: [],
     },
     {
+      name: "Loot confiscated coins",
       energy: 53,
       payout: ethers.utils.parseEther("1495000"),
       experience: 69,
@@ -470,6 +504,7 @@ jobTiers.push({
       rewardItemTypeNames: [],
     },
     {
+      name: "Convert a shill",
       energy: 26,
       payout: ethers.utils.parseEther("1092500"),
       experience: 45,
@@ -479,6 +514,7 @@ jobTiers.push({
       rewardItemTypeNames: [],
     },
     {
+      name: "Use a stolen device",
       energy: 17,
       payout: ethers.utils.parseEther("966000"),
       experience: 31,
@@ -488,6 +524,7 @@ jobTiers.push({
       rewardItemTypeNames: [],
     },
     {
+      name: "Force a rival into submission",
       energy: 24,
       payout: ethers.utils.parseEther("1725000"),
       experience: 44,
@@ -503,6 +540,7 @@ jobTiers.push({
   level: ethers.utils.parseEther("35"),
   jobs: [
     {
+      name: "Influence an official",
       energy: 45,
       payout: ethers.utils.parseEther("3335000"),
       experience: 74,
@@ -512,6 +550,7 @@ jobTiers.push({
       rewardItemTypeNames: [],
     },
     {
+      name: "Modify a public record",
       energy: 32,
       payout: ethers.utils.parseEther("3680000"),
       experience: 58,
@@ -521,6 +560,7 @@ jobTiers.push({
       rewardItemTypeNames: [],
     },
     {
+      name: "Snuff a activist",
       energy: 39,
       payout: ethers.utils.parseEther("3565000"),
       experience: 71,
@@ -530,6 +570,7 @@ jobTiers.push({
       rewardItemTypeNames: [],
     },
     {
+      name: "Hide a witness",
       energy: 36,
       payout: ethers.utils.parseEther("3910000"),
       experience: 66,
@@ -539,6 +580,7 @@ jobTiers.push({
       rewardItemTypeNames: [],
     },
     {
+      name: "Dispose evidence",
       energy: 22,
       payout: ethers.utils.parseEther("2875000"),
       experience: 41,
@@ -548,6 +590,7 @@ jobTiers.push({
       rewardItemTypeNames: [],
     },
     {
+      name: "Ransom a family",
       energy: 54,
       payout: ethers.utils.parseEther("5462500"),
       experience: 81,
@@ -557,6 +600,7 @@ jobTiers.push({
       rewardItemTypeNames: [],
     },
     {
+      name: "Fix the election",
       energy: 45,
       payout: ethers.utils.parseEther("5750000"),
       experience: 69,
@@ -566,6 +610,7 @@ jobTiers.push({
       rewardItemTypeNames: [],
     },
     {
+      name: "Steal an equipment shipment",
       energy: 40,
       payout: ethers.utils.parseEther("3450000"),
       experience: 75,
@@ -581,6 +626,7 @@ jobTiers.push({
   level: ethers.utils.parseEther("60"),
   jobs: [
     {
+      name: "Extort a corrupt official",
       energy: 21,
       payout: ethers.utils.parseEther("4370000"),
       experience: 41,
@@ -590,6 +636,7 @@ jobTiers.push({
       rewardItemTypeNames: [],
     },
     {
+      name: "Embezzle funds",
       energy: 45,
       payout: ethers.utils.parseEther("4830000"),
       experience: 81,
@@ -599,6 +646,7 @@ jobTiers.push({
       rewardItemTypeNames: [],
     },
     {
+      name: "Break into a server farm",
       energy: 45,
       payout: ethers.utils.parseEther("4025000"),
       experience: 69,
@@ -608,6 +656,7 @@ jobTiers.push({
       rewardItemTypeNames: [],
     },
     {
+      name: "Rip off the federal police",
       energy: 45,
       payout: ethers.utils.parseEther("3450000"),
       experience: 78,
@@ -617,6 +666,7 @@ jobTiers.push({
       rewardItemTypeNames: [],
     },
     {
+      name: "Muscle in on a scandal",
       energy: 40,
       payout: ethers.utils.parseEther("4600000"),
       experience: 78,
@@ -626,6 +676,7 @@ jobTiers.push({
       rewardItemTypeNames: [],
     },
     {
+      name: "Ambush a rival gang",
       energy: 49,
       payout: ethers.utils.parseEther("3220000"),
       experience: 92,
@@ -635,6 +686,7 @@ jobTiers.push({
       rewardItemTypeNames: [],
     },
     {
+      name: "Order a hit on a rival gang",
       energy: 31,
       payout: ethers.utils.parseEther("7457000"),
       experience: 63,
@@ -644,6 +696,7 @@ jobTiers.push({
       rewardItemTypeNames: [],
     },
     {
+      name: "Take over a drug cartel",
       energy: 32,
       payout: ethers.utils.parseEther("5520000"),
       experience: 60,
@@ -659,6 +712,7 @@ jobTiers.push({
   level: ethers.utils.parseEther("100"),
   jobs: [
     {
+      name: "Disrupt official operations",
       energy: 36,
       payout: ethers.utils.parseEther("5550000"),
       experience: 69,
@@ -668,6 +722,7 @@ jobTiers.push({
       rewardItemTypeNames: [],
     },
     {
+      name: "Bribe the police",
       energy: 31,
       payout: ethers.utils.parseEther("4662000"),
       experience: 67,
@@ -677,6 +732,7 @@ jobTiers.push({
       rewardItemTypeNames: [],
     },
     {
+      name: "Make a deal with a corrupt official",
       energy: 36,
       payout: ethers.utils.parseEther("8880000"),
       experience: 69,
@@ -686,6 +742,7 @@ jobTiers.push({
       rewardItemTypeNames: [],
     },
     {
+      name: "Blackmail a judge",
       energy: 39,
       payout: ethers.utils.parseEther("11100000"),
       experience: 74,
@@ -695,6 +752,7 @@ jobTiers.push({
       rewardItemTypeNames: [],
     },
     {
+      name: "Coerce the DA",
       energy: 76,
       payout: ethers.utils.parseEther("19980000"),
       experience: 152,
@@ -704,6 +762,7 @@ jobTiers.push({
       rewardItemTypeNames: [],
     },
     {
+      name: "Apply pressure to a senator",
       energy: 36,
       payout: ethers.utils.parseEther("55500000"),
       experience: 69,
@@ -713,6 +772,7 @@ jobTiers.push({
       rewardItemTypeNames: [],
     },
     {
+      name: "Takeover a Central Exchange",
       energy: 63,
       payout: ethers.utils.parseEther("17760000"),
       experience: 121,
@@ -722,6 +782,7 @@ jobTiers.push({
       rewardItemTypeNames: [],
     },
     {
+      name: "Finish business",
       energy: 46,
       payout: ethers.utils.parseEther("13764000"),
       experience: 90,

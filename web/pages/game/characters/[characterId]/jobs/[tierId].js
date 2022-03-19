@@ -3,7 +3,6 @@ import { BigNumber } from "ethers";
 import { useRouter } from "next/router";
 import GameTemplate from "../../../../../components/modules/GameTemplate";
 
-import jobTiers from "../../../../../constants/jobs";
 import useJobsContract from "../../../../../components/hooks/useJobsContract";
 import useCharacterJobExperience from "../../../../../components/hooks/useCharacterJobExperience";
 import useCharacter from "../../../../../components/hooks/useCharacter";
@@ -13,6 +12,7 @@ import JobTierList from "../../../../../components/modules/JobTierList";
 import useContractMutation from "../../../../../components/hooks/useContractMutation";
 import useCharacterTokens from "../../../../../components/hooks/useCharacterTokens";
 import { useQueryClient } from "react-query";
+import { jobTiers } from "shared/utils/jobs";
 
 const JobRow = ({ job, tierId, jobIndex, characterId }) => {
   const queryClient = useQueryClient();

@@ -476,6 +476,7 @@ contract CryptoChar is ERC721, ERC721Enumerable, Ownable {
         address to,
         uint256 tokenId
     ) internal override(ERC721, ERC721Enumerable) {
+        // TODO: Lock character for sale?
         super._beforeTokenTransfer(from, to, tokenId);
     }
 

@@ -1,28 +1,14 @@
-import {
-  Box,
-  Button,
-  Icon,
-  Input,
-  Stack,
-  Text,
-  Tooltip,
-} from "@chakra-ui/react";
+import { Box, Button, Input, Stack, Text } from "@chakra-ui/react";
 import { BigNumber } from "ethers";
 import { useRouter } from "next/router";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import useCharacterProperty from "../../../../components/hooks/useCharacterProperty";
 import usePropertyContract from "../../../../components/hooks/usePropertyContract";
 import usePropertyTypes from "../../../../components/hooks/usePropertyTypes";
 import GameTemplate from "../../../../components/modules/GameTemplate";
 import { propertyTypeNames } from "../../../../constants/game";
-import { formatDistanceStrict, fromUnixTime } from "date-fns";
-import {
-  MdOutlineBatteryChargingFull,
-  MdBatteryCharging20,
-} from "react-icons/md";
 import formatNumber from "../../../../utils/formatNumber";
 import useContractMutation from "../../../../components/hooks/useContractMutation";
-import useCharacter from "../../../../components/hooks/useCharacter";
 import useCharacterTokens from "../../../../components/hooks/useCharacterTokens";
 import useTimer from "../../../../components/hooks/useTimer";
 import PropertyTimer from "../../../../components/modules/PropertyTimer";

@@ -35,7 +35,7 @@ const CharacterBar = ({ characterId }) => {
       <Box mx={2}>
         <Text fontWeight="bold">Level</Text>
         <Text mb={2}>
-          {character.level?.toString()} (
+          {formatNumber(character.level?.toNumber(), { style: "normal" })} (
           {formatNumber(character?.experience?.toNumber(), { style: "normal" })}
           /
           {formatNumber(
@@ -59,32 +59,52 @@ const CharacterBar = ({ characterId }) => {
       <Box mx={2}>
         <Text fontWeight="bold">Health</Text>
         <Text mb={2}>
-          {character?.health?.adjustedCurrent?.toString()} /{" "}
-          {character?.health?.equippedMax?.toString()}
+          {formatNumber(character?.health?.adjustedCurrent?.toString(), {
+            style: "normal",
+          })}{" "}
+          /{" "}
+          {formatNumber(character?.health?.equippedMax?.toString(), {
+            style: "normal",
+          })}
         </Text>
       </Box>
 
       <Box mx={2}>
         <Text fontWeight="bold">Energy</Text>
         <Text mb={2}>
-          {character?.energy?.adjustedCurrent?.toString()} /{" "}
-          {character?.energy?.equippedMax?.toString()}
+          {formatNumber(character?.energy?.adjustedCurrent?.toString(), {
+            style: "normal",
+          })}{" "}
+          /{" "}
+          {formatNumber(character?.energy?.equippedMax?.toString(), {
+            style: "normal",
+          })}
         </Text>
       </Box>
 
       <Box mx={2}>
         <Text fontWeight="bold">Stamina</Text>
         <Text mb={2}>
-          {character?.stamina?.adjustedCurrent?.toString()} /{" "}
-          {character?.stamina?.equippedMax?.toString()}
+          {formatNumber(character?.stamina?.adjustedCurrent?.toString(), {
+            style: "normal",
+          })}{" "}
+          /{" "}
+          {formatNumber(character?.stamina?.equippedMax?.toString(), {
+            style: "normal",
+          })}
         </Text>
       </Box>
 
       <Box mx={2}>
         <Text fontWeight="bold">Atk/Def</Text>
         <Text mb={2}>
-          {character?.attack?.equippedMax?.toString()} /{" "}
-          {character?.defense?.equippedMax?.toString()}
+          {formatNumber(character?.attack?.equippedMax?.toString(), {
+            style: "normal",
+          })}{" "}
+          /{" "}
+          {formatNumber(character?.defense?.equippedMax?.toString(), {
+            style: "normal",
+          })}
         </Text>
       </Box>
     </Stack>

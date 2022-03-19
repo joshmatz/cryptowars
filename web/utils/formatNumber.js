@@ -4,9 +4,9 @@ const formatNumber = (number, { isWei = true, style = "currency" } = {}) => {
   if (!number) {
     return "0.00";
   }
-
   let numberToBeFormatted = number;
-  if (number instanceof ethers.BigNumber) {
+
+  if (number.constructor.name === "BigNumber") {
     if (isWei) {
       numberToBeFormatted = ethers.utils.formatEther(number);
     } else {
