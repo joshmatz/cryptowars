@@ -1,4 +1,15 @@
-import { Box, Icon, Stack, Text } from "@chakra-ui/react";
+import {
+  Box,
+  Icon,
+  Stack,
+  Table,
+  Tbody,
+  Td,
+  Text,
+  Th,
+  Thead,
+  Tr,
+} from "@chakra-ui/react";
 import { BigNumber } from "ethers";
 import { useRouter } from "next/router";
 import { useQueries, useQuery } from "react-query";
@@ -158,23 +169,19 @@ const ItemBox = ({ characterId, query: { data: itemTypeId, status } = {} }) => {
   }
 
   return (
-    <Box borderBottomWidth={1} mb={5}>
-      <Stack direction="row">
-        <Text>
-          <RarityIcon rarity={itemTypes[itemTypeId.toNumber()].rarity} />
-        </Text>
-        <Text>
-          {itemTypes[itemTypeId.toNumber()].name} x{itemSupply?.toString()}
-        </Text>
-      </Stack>
-      <Stack direction="row">
-        <Text>
-          <ClassIcon classId={itemTypes[itemTypeId.toNumber()].class} />
-        </Text>
-        <Text>ATK: {itemTypes[itemTypeId.toNumber()].attack}</Text>
-        <Text>DEF: {itemTypes[itemTypeId.toNumber()].attack}</Text>
-      </Stack>
-    </Box>
+    <Tr>
+      <Td>
+        <ClassIcon classId={itemTypes[itemTypeId.toNumber()].class} />
+      </Td>
+      <Td>
+        <RarityIcon rarity={itemTypes[itemTypeId.toNumber()].rarity} />
+      </Td>
+      <Td>{itemTypes[itemTypeId.toNumber()].name}</Td>
+
+      <Td>ATK: {itemTypes[itemTypeId.toNumber()].attack}</Td>
+      <Td>DEF: {itemTypes[itemTypeId.toNumber()].attack}</Td>
+      <Td>x{itemSupply?.toString()}</Td>
+    </Tr>
   );
 };
 const useCharacterItems = (characterId) => {
@@ -195,9 +202,23 @@ const InventoryPage = () => {
     <GameTemplate characterId={characterId}>
       <Text mb={5}>Items make your Traveler more powerful.</Text>
 
-      {items.map((query, i) => (
-        <ItemBox key={i} characterId={characterId} query={query} />
-      ))}
+      <Table>
+        <Thead>
+          <Tr>
+            <Th>Class</Th>
+            <Th>Rarity</Th>
+            <Th>Name</Th>
+            <Th>Attack</Th>
+            <Th>Defense</Th>
+            <Th>Owned</Th>
+          </Tr>
+        </Thead>
+        <Tbody>
+          {items.map((query, i) => (
+            <ItemBox key={i} characterId={characterId} query={query} />
+          ))}
+        </Tbody>
+      </Table>
     </GameTemplate>
   );
 };

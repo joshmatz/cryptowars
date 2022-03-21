@@ -48,7 +48,11 @@ const JobTierListItem = ({ characterId, tierIndex, selectedIndex }) => {
   const isCompleted = jobTierUnlocked > tierIndex;
 
   useEffect(() => {
-    if (typeof jobTierUnlocked === "number" && isUnlocked) {
+    if (
+      typeof jobTierUnlocked === "number" &&
+      isUnlocked &&
+      jobTierUnlocked < tierNames.legth
+    ) {
       router.push(`/game/characters/${characterId}/jobs/${jobTierUnlocked}`);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

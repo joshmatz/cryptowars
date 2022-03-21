@@ -161,7 +161,11 @@ contract CryptoNYItems is ERC721, ERC721Enumerable, Ownable {
         // console.log(_attempts, successes);
 
         for (uint256 i = 0; i < _rewardData[3]; i++) {
-            uint256 _rarityRoll = _random(_rewardData[2] + i, 1000);
+            uint256 _rarityRoll = _random(
+                // ItemID + EXP + Run
+                _rewardData[0] + _rewardData[2] + i,
+                1000
+            );
             if (_rarityRoll > _rarityChance) {
                 mintItemToCharacter(_caller, _rewardData[0], _rewardData[1]);
             }

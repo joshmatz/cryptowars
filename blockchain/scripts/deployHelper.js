@@ -13,9 +13,10 @@ const { itemTypes } = require("shared/utils/items");
 
 const getItemTypeId = (itemTypeName) => {
   const found = itemTypes.findIndex(
-    (itemType) => itemType.name === itemTypeName
+    (itemType) => itemType.name.toLowerCase() === itemTypeName.toLowerCase()
   );
   if (found === -1) {
+    console.error("Item Type Not Found for", itemTypeName);
     return 0;
   }
   return found;

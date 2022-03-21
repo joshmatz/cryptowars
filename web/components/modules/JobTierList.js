@@ -1,5 +1,5 @@
 import { Box, Stack } from "@chakra-ui/react";
-import jobTiers from "../../constants/jobs";
+import { jobTiers } from "shared/utils/jobs";
 import JobTierListItem from "./JobTierListItem";
 
 const JobTierList = ({ characterId, children, selectedIndex }) => {

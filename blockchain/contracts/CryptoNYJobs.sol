@@ -150,10 +150,6 @@ contract CryptoNYJobs is Ownable {
             }
         }
 
-        ICryptoNyWallet(walletContract).mintToCharacter(
-            characterId,
-            job.payout.mul(runs)
-        );
         ICharacter(characterContract).updateCurrentAttributes(
             characterId,
             int256(job.experience.mul(runs)),
@@ -162,6 +158,13 @@ contract CryptoNYJobs is Ownable {
             0,
             skillPoints
         );
+
+        if (job.payout != 0) {
+            ICryptoNyWallet(walletContract).mintToCharacter(
+                characterId,
+                job.payout.mul(runs)
+            );
+        }
 
         if (job.rewardItemIds.length != 0) {
             uint256[4] memory rewardData = [0, characterId, newExp, runs];
@@ -173,6 +176,16 @@ contract CryptoNYJobs is Ownable {
                 );
             }
         }
+
+        // if (job.requiredItemIds.length != 0) {
+        //     for (uint256 i = 0; i < job.requiredItemIds.length; i++) {
+        //         IItems(itemsContract).burnItemFromCharacter(
+        //             characterId,
+        //             job.requiredItemIds[i],
+        //             job.requiredItemCounts[i]
+        //         );
+        //     }
+        // }
 
         // emit completion event
         emit JobComplete(msg.sender, characterId, tierId, jobId, runs);

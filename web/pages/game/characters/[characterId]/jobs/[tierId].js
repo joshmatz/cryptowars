@@ -1,4 +1,12 @@
-import { Box, Button, Input, Progress, Stack, Text } from "@chakra-ui/react";
+import {
+  Box,
+  Button,
+  Input,
+  Progress,
+  Stack,
+  Tag,
+  Text,
+} from "@chakra-ui/react";
 import { BigNumber } from "ethers";
 import { useRouter } from "next/router";
 import GameTemplate from "../../../../../components/modules/GameTemplate";
@@ -14,6 +22,7 @@ import useCharacterTokens from "../../../../../components/hooks/useCharacterToke
 import { useQueryClient } from "react-query";
 import { jobTiers } from "shared/utils/jobs";
 
+const gasLimitPerJob = 201604;
 const JobRow = ({ job, tierId, jobIndex, characterId }) => {
   const queryClient = useQueryClient();
   const jobsContract = useJobsContract();
@@ -28,7 +37,10 @@ const JobRow = ({ job, tierId, jobIndex, characterId }) => {
     useCharacterTokens(characterId);
 
   const { mutate: completeJob, isLoading } = useContractMutation(
-    () => jobsContract.completeJob(characterId, tierId, jobIndex, jobRuns),
+    () =>
+      jobsContract.completeJob(characterId, tierId, jobIndex, jobRuns, {
+        gasLimit: gasLimitPerJob * jobRuns,
+      }),
     {
       notificationProgress: {
         title: `${job.name} in progress...`,
@@ -48,6 +60,12 @@ const JobRow = ({ job, tierId, jobIndex, characterId }) => {
       },
     }
   );
+  const requiredItems = job.requiredItemTypeNames.map((itemTypeName, i) => {
+    return {
+      name: itemTypeName,
+      amount: job.requiredItemTypeCounts[i],
+    };
+  });
 
   if (!character) {
     return null;
@@ -64,12 +82,34 @@ const JobRow = ({ job, tierId, jobIndex, characterId }) => {
       borderColor="gray.700"
       pb="1"
     >
-      <Box flex="1 0 50%" mb={{ base: 5, lg: 0 }}>
-        <Text fontWeight="bold">{job.name}</Text>
-        <Text>
-          Use {job.energy.toString()} Energy | Earn ${formatNumber(job.payout)}{" "}
-          + {job.experience}XP
-        </Text>
+      <Box flex="1 0 50%" mb={{ base: 5, lg: 0 }} pr={{ base: 0, lg: 5 }}>
+        <Stack>
+          <Text fontWeight="bold">{job.name}</Text>
+
+          <Stack direction="row">
+            <Text>Use: </Text>
+            <Tag size="sm">{job.energy.toString()} Energy</Tag>
+            {job.requiredItemTypeNames.map((itemTypeName, i) => {
+              return (
+                <Tag key={itemTypeName} size="sm">
+                  {itemTypeName} x {job.requiredItemTypeCounts[i]}
+                </Tag>
+              );
+            })}
+          </Stack>
+          <Stack direction="row">
+            <Text>Earn: </Text>
+            <Tag size="sm">${formatNumber(job.payout)}</Tag>
+            <Tag size="sm">{job.experience}XP</Tag>
+            {job.rewardItemTypeNames.map((itemTypeName, i) => {
+              return (
+                <Tag key={itemTypeName} size="sm" variant="outline">
+                  {itemTypeName}
+                </Tag>
+              );
+            })}
+          </Stack>
+        </Stack>
       </Box>
 
       <Stack
@@ -121,6 +161,8 @@ const JobRow = ({ job, tierId, jobIndex, characterId }) => {
             type="number"
             value={jobRuns}
             onChange={(e) => setJobRuns(e.target.value)}
+            min="1"
+            max="150"
           />
         )}
 
@@ -151,10 +193,10 @@ const JobTierPage = () => {
     query: { tierId, characterId },
   } = router;
 
-  const jobs = jobTiers[tierId].jobs;
+  const jobs = jobTiers[tierId]?.jobs;
 
   if (!jobs) {
-    return <Box>No jobs</Box>;
+    return <Box>404: No jobs</Box>;
   }
 
   return (

@@ -173,7 +173,12 @@ const PropertyRow = ({ characterId, propertyTypeIndex }) => {
               flex="1 0 auto"
               onClick={upgradeProperty}
               disabled={
-                !isCapableOfUpgrading ||
+                calculateUpgradeCost({
+                  costPerLevel: propertyType.costPerLevel,
+                  cost: propertyType.cost,
+                  currentLevel: characterProperty.level,
+                  levels: parseInt(upgradesToBuy, 10) || 0,
+                }).gt(tokens) ||
                 characterProperty.level?.eq(propertyType.maxLevel) ||
                 upgradingStatus === "loading"
               }

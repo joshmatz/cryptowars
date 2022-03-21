@@ -35,7 +35,10 @@ const GameNavigation = () => {
     }
   );
 
-  const jobTierUnlocked = unlockedJobTiers?.toNumber();
+  let jobTierUnlocked = unlockedJobTiers?.toNumber();
+  if (jobTierUnlocked === 9) {
+    jobTierUnlocked = 8;
+  }
 
   const navLinks = [
     {
