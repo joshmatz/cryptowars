@@ -135,12 +135,7 @@ contract CryptoNYFight is Ownable {
             characterAttacksLost[attackingCharacterId]++;
             characterDefendsWon[defendingCharacterId]++;
         }
-        console.log(
-            "Roll: %s, Attacker Score: %s, Defender Score: %s",
-            roll,
-            attackerScore,
-            defenderScore
-        );
+
         CryptoChar(characterContract).updateCurrentAttributes(
             attackingCharacterId,
             0,

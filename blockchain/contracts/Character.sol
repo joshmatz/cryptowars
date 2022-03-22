@@ -46,6 +46,8 @@ struct Region {
 contract CryptoChar is ERC721, ERC721Enumerable, Ownable {
     using SafeMath for uint256;
 
+    event CharacterUpdated(uint256 indexed characterId);
+
     uint256 public constant HEALTH_REGEN_SECONDS = 300;
     uint256 public constant ENERGY_REGEN_SECONDS = 300;
     uint256 public constant STAMINA_REGEN_SECONDS = 300;
@@ -372,6 +374,8 @@ contract CryptoChar is ERC721, ERC721Enumerable, Ownable {
                 ].stamina.equippedMax;
             }
         }
+
+        emit CharacterUpdated(characterId);
     }
 
     function getCharacterStats(uint256 characterId)

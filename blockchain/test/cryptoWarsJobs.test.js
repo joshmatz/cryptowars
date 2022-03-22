@@ -493,7 +493,7 @@ describe("cryptoWars.jobs", function () {
       });
     });
 
-    describe(" get enough energy to complete all jobs in tier", function () {
+    describe("get enough energy to complete all jobs in tier", function () {
       let newCharacter;
       this.beforeAll(async () => {
         for (let i = 0; i < 201; i++) {

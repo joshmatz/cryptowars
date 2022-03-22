@@ -27,29 +27,50 @@ const SimpleCharacterBar = ({ characterId }) => {
 
   return (
     <>
-      <Td>
-        {character?.name} (L{character?.level.toString()})
+      <Td fontSize="sm">
+        {character?.name} (L
+        {formatNumber(character?.level.toString(), { style: "normal" })})
       </Td>
-      <Td>${formatNumber(tokens)}</Td>
-      <Td>
-        {character?.energy?.adjustedCurrent.toString()} /{" "}
-        {character?.energy?.equippedMax.toString()}
+      <Td fontSize="sm">${formatNumber(tokens)}</Td>
+      <Td fontSize="sm">
+        {formatNumber(character?.energy?.adjustedCurrent.toString(), {
+          style: "normal",
+        })}{" "}
+        /{" "}
+        {formatNumber(character?.energy?.equippedMax.toString(), {
+          style: "normal",
+        })}
       </Td>
-      <Td>
-        {character?.stamina?.adjustedCurrent.toString()} /{" "}
-        {character?.stamina?.equippedMax.toString()}
+      <Td fontSize="sm">
+        {formatNumber(character?.stamina?.adjustedCurrent.toString(), {
+          style: "normal",
+        })}{" "}
+        /{" "}
+        {formatNumber(character?.stamina?.equippedMax.toString(), {
+          style: "normal",
+        })}
       </Td>
-      <Td>
-        {character?.health?.adjustedCurrent.toString()} /{" "}
-        {character?.health?.equippedMax.toString()}
+      <Td fontSize="sm">
+        {formatNumber(character?.health?.adjustedCurrent.toString(), {
+          style: "normal",
+        })}{" "}
+        /{" "}
+        {formatNumber(character?.health?.equippedMax.toString(), {
+          style: "normal",
+        })}
       </Td>
-      <Td>
-        {character?.attack?.equippedMax.toString()} /{" "}
-        {character?.defense?.equippedMax.toString()}
+      <Td fontSize="sm">
+        {formatNumber(character?.attack?.equippedMax.toString(), {
+          style: "normal",
+        })}{" "}
+        /{" "}
+        {formatNumber(character?.defense?.equippedMax.toString(), {
+          style: "normal",
+        })}
       </Td>
       <Td>
         <RouterLink href={`/game/characters/${characterId}`} passHref>
-          <Button as="a" variant="outline">
+          <Button size="sm" as="a" variant="outline">
             Control
           </Button>
         </RouterLink>
@@ -169,7 +190,6 @@ const CharacterView = () => {
           )}
         </Tbody>
       </Table>
-      <Text mb="2">Character Count: {characterCount?.toString()}</Text>
       <Button onClick={createCharacter}>Create character</Button>
     </Box>
   );

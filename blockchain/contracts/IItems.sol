@@ -6,4 +6,10 @@ interface IItems {
         address _caller,
         uint256[4] calldata rewardData
     ) external;
+
+    function useItemFromCharacter(
+        uint256 _itemTypeId,
+        uint256 _characterId,
+        uint256 _amount
+    ) external;
 }

@@ -132,7 +132,7 @@ const WalletBar = ({ character, refetchCharacter }) => {
   }
 
   return (
-    <Box
+    <Stack
       flex="1"
       p={5}
       borderWidth="1px"
@@ -143,12 +143,13 @@ const WalletBar = ({ character, refetchCharacter }) => {
         e.preventDefault();
         submitTransfer();
       }}
+      gap={2}
     >
-      <Text fontWeight="bold" mb={5}>
-        The Safe
-      </Text>
+      <Text fontWeight="bold">The Safe</Text>
 
-      <Text mb={5}>You can deposit/withdraw funds from your character.</Text>
+      <Text fontSize="sm">
+        You can deposit/withdraw funds from your character.
+      </Text>
 
       <ButtonGroup size="sm" isAttached variant="outline" mb={5}>
         <Button
@@ -166,11 +167,12 @@ const WalletBar = ({ character, refetchCharacter }) => {
         </Button>
       </ButtonGroup>
 
-      <InputGroup mb={5}>
+      <InputGroup mb={5} size="sm">
         <InputLeftElement pointerEvents="none">
           <Text>$</Text>
         </InputLeftElement>
         <Input
+          size="sm"
           type="number"
           placeholder="Amount"
           value={amount}
@@ -195,6 +197,7 @@ const WalletBar = ({ character, refetchCharacter }) => {
         align="center"
       >
         <Button
+          size="sm"
           w={{ base: "full", md: "initial" }}
           disabled={isLoading || parseInt(amount, 10) === 0}
           type="submit"
@@ -206,7 +209,7 @@ const WalletBar = ({ character, refetchCharacter }) => {
         </Button>
         <Text fontSize="sm">Balance: ${formatNumber(balance)}</Text>
       </Stack>
-    </Box>
+    </Stack>
   );
 };
 

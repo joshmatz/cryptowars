@@ -1,6 +1,6 @@
 const hoursToSeconds = require("date-fns/hoursToSeconds");
 const { ethers, BigNumber } = require("hardhat");
-const { propertyTypes } = require("../../../shared/utils/properties");
+const { propertyTypes } = require("shared/utils/properties");
 const collectRevenue = async ({
   signer,
   walletContract,

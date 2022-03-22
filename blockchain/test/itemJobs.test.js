@@ -107,18 +107,27 @@ describe("cryptoWars.itemJobs", function () {
 
   describe("complete a job with a rewardItemTypeId", function () {
     it("should pass", async () => {
-      {
-        await characterMock.mock.ownerOf.withArgs(0).returns(wallet.address);
-        await characterMock.mock.isCharacterInRegion
-          .withArgs(0, 0)
-          .returns(true);
-        await itemsMock.mock.rewardItemToCharacter.returns();
-        await characterMock.mock.updateCurrentAttributes.returns();
-        await expect(jobsContract.completeJob(0, 0, 1, 1)).to.emit(
-          jobsContract,
-          "JobComplete"
-        );
-      }
+      await characterMock.mock.ownerOf.withArgs(0).returns(wallet.address);
+      await characterMock.mock.isCharacterInRegion.withArgs(0, 0).returns(true);
+      await itemsMock.mock.rewardItemToCharacter.returns();
+      await characterMock.mock.updateCurrentAttributes.returns();
+      await expect(jobsContract.completeJob(0, 0, 1, 1)).to.emit(
+        jobsContract,
+        "JobComplete"
+      );
+    });
+  });
+
+  describe("complete a job with requiredItemTypeId", function () {
+    it("should pass", async () => {
+      await characterMock.mock.ownerOf.withArgs(0).returns(wallet.address);
+      await characterMock.mock.isCharacterInRegion.withArgs(0, 0).returns(true);
+      await itemsMock.mock.rewardItemToCharacter.returns();
+      await characterMock.mock.updateCurrentAttributes.returns();
+      await expect(jobsContract.completeJob(0, 0, 0, 1)).to.emit(
+        jobsContract,
+        "JobComplete"
+      );
     });
   });
 });

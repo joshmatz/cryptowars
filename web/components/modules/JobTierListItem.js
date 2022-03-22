@@ -30,7 +30,7 @@ const tierNames = [
 
 const JobTierListItem = ({ characterId, tierIndex, selectedIndex }) => {
   const router = useRouter();
-  const jobContract = useJobsContract();
+  const { contract: jobContract } = useJobsContract();
   const { data: unlockedJobTiers } = useQuery(
     `unlockedJobTiers-${characterId}`,
     () => jobContract.characterJobTier(characterId),
@@ -85,7 +85,11 @@ const JobTierListItem = ({ characterId, tierIndex, selectedIndex }) => {
         <Divider h={0.5} bg={isUnlocked ? unlockedColor : lockedColor} />
       </Stack>
       <Stack alignItems="center">
-        <Text fontWeight={isSelectedIndex ? "bold" : ""} textAlign="center">
+        <Text
+          fontSize="sm"
+          fontWeight={isSelectedIndex ? "bold" : ""}
+          textAlign="center"
+        >
           {isUnlocked ? (
             <RouterLink
               passHref

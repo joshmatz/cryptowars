@@ -5,7 +5,10 @@ import {
   Progress,
   Stack,
   Tag,
+  TagLabel,
+  TagLeftIcon,
   Text,
+  useToast,
 } from "@chakra-ui/react";
 import { BigNumber } from "ethers";
 import { useRouter } from "next/router";
@@ -21,11 +24,16 @@ import useContractMutation from "../../../../../components/hooks/useContractMuta
 import useCharacterTokens from "../../../../../components/hooks/useCharacterTokens";
 import { useQueryClient } from "react-query";
 import { jobTiers } from "shared/utils/jobs";
+import ClassIcon from "../../../../../components/modules/ItemClassIcon";
+import { getItemTypeId, itemTypes } from "shared/utils/items";
+import useItemListener from "../../../../../components/hooks/useItemListener";
+import { useWeb3Context } from "../../../../../components/Web3ContextProvider";
 
-const gasLimitPerJob = 201604;
+const gasLimitPerJob = 205000;
 const JobRow = ({ job, tierId, jobIndex, characterId }) => {
+  const toast = useToast();
   const queryClient = useQueryClient();
-  const jobsContract = useJobsContract();
+  const { contract: jobsContract, abi: jobsAbi } = useJobsContract();
   const [jobRuns, setJobRuns] = useState(1);
   const { data: character, refetch: refetchCharacter } =
     useCharacter(characterId);
@@ -60,6 +68,7 @@ const JobRow = ({ job, tierId, jobIndex, characterId }) => {
       },
     }
   );
+
   const requiredItems = job.requiredItemTypeNames.map((itemTypeName, i) => {
     return {
       name: itemTypeName,
@@ -76,35 +85,67 @@ const JobRow = ({ job, tierId, jobIndex, characterId }) => {
       display="flex"
       flexDirection={{ base: "column", lg: "row" }}
       justifyContent={{ lg: "space-between" }}
-      alignItems={{ lg: "center" }}
+      alignItems={{ lg: "flex-end" }}
       mb={5}
       borderBottom="1px"
       borderColor="gray.700"
-      pb="1"
+      pb="2"
     >
-      <Box flex="1 0 50%" mb={{ base: 5, lg: 0 }} pr={{ base: 0, lg: 5 }}>
+      <Box
+        width={{ base: "full", lg: "50%" }}
+        mb={{ base: 5, lg: 0 }}
+        pr={{ base: 0, lg: 5 }}
+      >
         <Stack>
           <Text fontWeight="bold">{job.name}</Text>
 
-          <Stack direction="row">
-            <Text>Use: </Text>
-            <Tag size="sm">{job.energy.toString()} Energy</Tag>
+          <Stack direction="row" wrap>
+            <Text fontSize="sm">Use: </Text>
+            <Tag size="sm" title={`${job.energy.toString()} Energy`}>
+              <TagLabel>{job.energy.toString()} Energy</TagLabel>
+            </Tag>
             {job.requiredItemTypeNames.map((itemTypeName, i) => {
               return (
-                <Tag key={itemTypeName} size="sm">
-                  {itemTypeName} x {job.requiredItemTypeCounts[i]}
+                <Tag
+                  key={itemTypeName}
+                  size="sm"
+                  title={`${job.requiredItemTypeCounts[i]}x ${itemTypeName}`}
+                >
+                  {itemTypes[getItemTypeId(itemTypeName)].class === 6 ? (
+                    <TagLeftIcon
+                      as={() => (
+                        <ClassIcon
+                          mt={0}
+                          mr={1}
+                          classId={itemTypes[getItemTypeId(itemTypeName)].class}
+                        />
+                      )}
+                    />
+                  ) : null}
+                  <TagLabel>
+                    {job.requiredItemTypeCounts[i]}x {itemTypeName}
+                  </TagLabel>
                 </Tag>
               );
             })}
           </Stack>
-          <Stack direction="row">
-            <Text>Earn: </Text>
-            <Tag size="sm">${formatNumber(job.payout)}</Tag>
-            <Tag size="sm">{job.experience}XP</Tag>
+          <Stack direction="row" wrap>
+            <Text fontSize="sm">Earn: </Text>
+            <Tag size="sm" title={`$${formatNumber(job.payout)}`}>
+              <TagLabel>${formatNumber(job.payout)}</TagLabel>
+            </Tag>
+            <Tag size="sm" title={`${job.experience}XP`}>
+              <TagLabel>{job.experience}XP</TagLabel>
+            </Tag>
             {job.rewardItemTypeNames.map((itemTypeName, i) => {
               return (
-                <Tag key={itemTypeName} size="sm" variant="outline">
-                  {itemTypeName}
+                <Tag
+                  key={itemTypeName}
+                  size="sm"
+                  variant="outline"
+                  title={itemTypeName}
+                >
+                  <TagLabel>{itemTypeName}</TagLabel>
                 </Tag>
               );
             })}
@@ -127,7 +168,6 @@ const JobRow = ({ job, tierId, jobIndex, characterId }) => {
         <Box
           flex="1 0 auto"
           width="50%"
-          mr="5"
           // opacity={jobExperience?.total?.toNumber() ? 1 : 0.5}
         >
           {jobExperience?.level.toNumber() === 3 ? (
@@ -145,11 +185,14 @@ const JobRow = ({ job, tierId, jobIndex, characterId }) => {
                   job.experiencePerTier
                 }
               />
-              <Text>
+              <Text fontSize="sm">
                 Mastery: {jobExperience?.level.toNumber()} | Next:{" "}
                 {job.experiencePerTier
                   ? job.experiencePerTier -
-                    (jobExperience?.total.toNumber() % job.experiencePerTier)
+                    formatNumber(
+                      jobExperience?.total.toNumber() % job.experiencePerTier,
+                      { style: "normal" }
+                    )
                   : 0}
                 XP
               </Text>
@@ -163,6 +206,7 @@ const JobRow = ({ job, tierId, jobIndex, characterId }) => {
             onChange={(e) => setJobRuns(e.target.value)}
             min="1"
             max="150"
+            size="sm"
           />
         )}
 
@@ -173,6 +217,7 @@ const JobRow = ({ job, tierId, jobIndex, characterId }) => {
             isLoading
           }
           type="submit"
+          size="sm"
         >
           {character.energy.adjustedCurrent.lt(job.energy * jobRuns)
             ? `-${BigNumber.from(job.energy * jobRuns)
@@ -192,6 +237,9 @@ const JobTierPage = () => {
   const {
     query: { tierId, characterId },
   } = router;
+
+  const { web3State } = useWeb3Context();
+  useItemListener(web3State.address);
 
   const jobs = jobTiers[tierId]?.jobs;
 

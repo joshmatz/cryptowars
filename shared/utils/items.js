@@ -76,14 +76,34 @@ const shills = shillsString.split(/\r\n|\r|\n/).map((ri, index) => {
   return getItemInfo(classMap.SHILL, ri);
 });
 
+const itemTypes = [
+  ...weapons,
+  ...armor,
+  ...vehicles,
+  ...consumables,
+  ...shills,
+];
+
+const getItemTypeId = (itemTypeName) => {
+  const found = itemTypes.findIndex(
+    (itemType) => itemType.name.toLowerCase() === itemTypeName.toLowerCase()
+  );
+  if (found === -1) {
+    console.error("Item Type Not Found for", itemTypeName);
+    return 0;
+  }
+  return found;
+};
+
 const things = {
-  itemTypes: [...weapons, ...armor, ...vehicles, ...consumables, ...shills],
+  itemTypes,
   weapons,
   armor,
   vehicles,
   consumables,
   //   boosts,
   shills,
+  getItemTypeId,
 };
 
 module.exports = things;

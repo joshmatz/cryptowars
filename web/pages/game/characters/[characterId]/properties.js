@@ -1,4 +1,11 @@
-import { Box, Button, Input, Stack, Text } from "@chakra-ui/react";
+import {
+  Box,
+  Button,
+  Input,
+  Stack,
+  StackDivider,
+  Text,
+} from "@chakra-ui/react";
 import { BigNumber } from "ethers";
 import { useRouter } from "next/router";
 import { useState } from "react";
@@ -124,42 +131,43 @@ const PropertyRow = ({ characterId, propertyTypeIndex }) => {
   }).lte(tokens);
 
   return (
-    <Box
+    <Stack
       display="flex"
       justifyContent={"space-between"}
-      alignItems="center"
+      alignItems={{ md: "flex-end" }}
       mb="5"
       borderBottom="1px"
       borderColor="gray.700"
       pb="2"
+      flexDirection={{ base: "column", md: "row" }}
     >
       <Box flex="1 0 50%">
         <Text fontWeight="bold">{propertyTypeNames[propertyTypeIndex]}</Text>
-        <Stack direction="row">
-          <Text>
-            Level {characterProperty.level?.toString() || 0} | $
+        <Stack direction="row" divider={<StackDivider />}>
+          <Text fontSize="sm">
+            Level {characterProperty.level?.toString() || 0}
+          </Text>
+          <Text fontSize="sm">
+            $
             {formatNumber(
               propertyType?.incomePerLevel?.mul(characterProperty.level || 1)
             )}
             /{(propertyType?.maxCollection || 0) / 60 / 60}h
           </Text>
           {characterProperty.level ? (
-            <>
-              <Text> | </Text>
-              <PropertyTimer
-                time={time}
-                percentFull={percentFull}
-                lastCollected={characterProperty.lastCollected}
-                maxCollection={propertyType.maxCollection}
-                incomeCapacity={propertyType.incomePerLevel}
-                levels={characterProperty.level}
-              />
-            </>
+            <PropertyTimer
+              time={time}
+              percentFull={percentFull}
+              lastCollected={characterProperty.lastCollected}
+              maxCollection={propertyType.maxCollection}
+              incomeCapacity={propertyType.incomePerLevel}
+              levels={characterProperty.level}
+            />
           ) : null}
         </Stack>
       </Box>
       {characterProperty.level ? (
-        <Stack display="flex">
+        <Stack>
           <Stack direction="row">
             {!isCapableOfUpgrading ||
             characterProperty.level?.eq(propertyType.maxLevel) ? null : (
@@ -167,11 +175,13 @@ const PropertyRow = ({ characterId, propertyTypeIndex }) => {
                 type="number"
                 value={upgradesToBuy}
                 onChange={(e) => setUpgradesToBuy(e.target.value)}
+                size="sm"
               />
             )}
             <Button
               flex="1 0 auto"
               onClick={upgradeProperty}
+              size="sm"
               disabled={
                 calculateUpgradeCost({
                   costPerLevel: propertyType.costPerLevel,
@@ -199,6 +209,7 @@ const PropertyRow = ({ characterId, propertyTypeIndex }) => {
             flex="1 0 auto"
             onClick={collectRevenue}
             colorScheme={bonusCapacityMul === 11 ? "green" : undefined}
+            size="sm"
           >
             Collect{" "}
             {propertyType?.incomePerLevel &&
@@ -224,6 +235,7 @@ const PropertyRow = ({ characterId, propertyTypeIndex }) => {
         </Stack>
       ) : (
         <Button
+          size="sm"
           onClick={purchaseProperty}
           disabled={!isCapableOfPurchasing || collectingStatus === "loading"}
         >
@@ -231,7 +243,7 @@ const PropertyRow = ({ characterId, propertyTypeIndex }) => {
           {propertyType?.cost ? formatNumber(propertyType.cost) : null}
         </Button>
       )}
-    </Box>
+    </Stack>
   );
 };
 

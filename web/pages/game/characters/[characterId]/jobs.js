@@ -7,7 +7,7 @@ const JobsPage = () => {
   const {
     query: { characterId },
   } = router;
-  const jobContract = useJobsContract();
+  const { contract: jobContract } = useJobsContract();
   const { data: unlockedJobTiers, status } = useQuery(
     `unlockedJobTiers-${characterId}`,
     () => jobContract.characterJobTier(characterId),

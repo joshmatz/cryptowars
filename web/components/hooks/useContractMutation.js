@@ -4,7 +4,7 @@ import { useMutation } from "react-query";
 
 const useContractMutation = (
   transactionFunction,
-  { notificationSuccess, notificationProgress },
+  { notificationSuccess, notificationProgress, eventListeners },
   opts
 ) => {
   const [uuid] = useState(() => Math.random().toString(36).substring(7));
@@ -37,10 +37,11 @@ const useContractMutation = (
       duration: null,
       isClosable: true,
     });
+    let receipt;
     try {
-      await tx.wait(1);
+      receipt = await tx.wait();
     } catch (e) {
-      console.log(e);
+      console.error(e);
       toast.close(ref.current);
       toast({
         title: "Malfunction in the system...",
@@ -51,10 +52,22 @@ const useContractMutation = (
       });
       return;
     }
+
+    let successTitle;
+    let successDescription;
+    if (typeof notificationSuccess === "function") {
+      const res = notificationSuccess(receipt);
+      successTitle = res.title;
+      successDescription = res.description;
+    } else {
+      successTitle = notificationSuccess.title;
+      successDescription = notificationSuccess.description;
+    }
+
     toast.close(ref.current);
     toast({
-      title: notificationSuccess.title,
-      description: notificationSuccess.description,
+      title: successTitle,
+      description: successDescription,
       status: "success",
       duration: 9000,
       isClosable: true,

@@ -9,18 +9,7 @@ const { ethers } = require("hardhat");
 const { BigNumber } = require("ethers");
 const { jobTiers } = require("shared/utils/jobs");
 const { propertyTypes } = require("shared/utils/properties");
-const { itemTypes } = require("shared/utils/items");
-
-const getItemTypeId = (itemTypeName) => {
-  const found = itemTypes.findIndex(
-    (itemType) => itemType.name.toLowerCase() === itemTypeName.toLowerCase()
-  );
-  if (found === -1) {
-    console.error("Item Type Not Found for", itemTypeName);
-    return 0;
-  }
-  return found;
-};
+const { itemTypes, getItemTypeId } = require("shared/utils/items");
 
 const propertyTypePropsToArray = (props) => {
   return [
@@ -192,7 +181,7 @@ const deployJobsContract = async (
   return cryptoNyJobs.address;
 };
 
-const deployItemContract = async (characterAddress) => {
+const deployItemContract = async (characterAddress, jobsAddress) => {
   if (process.env.ITEM_CONTRACT_ADDRESS) {
     console.log("Skipping Item Deployment");
     return process.env.ITEM_CONTRACT_ADDRESS;
@@ -383,6 +372,8 @@ async function main({
       "CryptoNYItems",
       itemsAddress
     );
+
+    transactions.push(await itemsContract._addGameContract(jobsAddress));
 
     // createItemTypes
     for (let itemTypeId = 0; itemTypeId < itemTypes.length; itemTypeId++) {

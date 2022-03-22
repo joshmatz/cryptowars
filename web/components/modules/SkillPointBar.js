@@ -22,15 +22,17 @@ const StatControl = ({ keyValue, label, state, setState }) => {
     <FormControl>
       <Grid templateColumns="repeat(12, 1fr)" gap={5} alignItems="center">
         <GridItem colSpan="3">
-          <FormLabel htmlFor={keyValue}>{label}</FormLabel>
+          <FormLabel fontSize="sm" htmlFor={keyValue}>
+            {label}
+          </FormLabel>
         </GridItem>
 
         <GridItem colSpan="9">
           <Stack direction="row" align="center">
             <Icon
               as={AiFillPlusSquare}
-              w={7}
-              h={7}
+              w={5}
+              h={5}
               onClick={() =>
                 setState((newState) => ({
                   ...newState,
@@ -39,6 +41,7 @@ const StatControl = ({ keyValue, label, state, setState }) => {
               }
             />
             <Input
+              size="sm"
               flex="1 1 auto"
               id={keyValue}
               type="number"
@@ -118,7 +121,7 @@ const SkillPointBar = ({ character, refetchCharacter }) => {
         borderColor="gray.600"
       >
         <Text fontWeight="bold">Skill Points</Text>
-        <Text>Womp womp... No skill points available.</Text>
+        <Text fontSize="sm">Womp womp... No skill points available.</Text>
       </Stack>
     );
   }
@@ -136,49 +139,47 @@ const SkillPointBar = ({ character, refetchCharacter }) => {
       borderBottomWidth="3px"
       borderColor="gray.600"
     >
-      <Stack mb={5}>
+      <Stack mb={5} gap={2}>
         <Text fontWeight="bold">Skill Points</Text>
-        <Text mb={5}>
+        <Text fontSize="sm">
           {formatNumber(character.skillPoints, {
             isWei: false,
             style: "normal",
           })}{" "}
           skill points to spend. Spend wisely.
         </Text>
-        <Stack gap={2}>
-          <StatControl
-            keyValue="health"
-            label="Health"
-            state={state}
-            setState={setState}
-          />
-          <StatControl
-            keyValue="energy"
-            label="Energy"
-            state={state}
-            setState={setState}
-          />
-          <StatControl
-            keyValue="stamina"
-            label="Stamina"
-            state={state}
-            setState={setState}
-          />
-          <StatControl
-            keyValue="attack"
-            label="Attack"
-            state={state}
-            setState={setState}
-          />
-          <StatControl
-            keyValue="defense"
-            label="Defense"
-            state={state}
-            setState={setState}
-          />
-        </Stack>
+        <StatControl
+          keyValue="health"
+          label="Health"
+          state={state}
+          setState={setState}
+        />
+        <StatControl
+          keyValue="energy"
+          label="Energy"
+          state={state}
+          setState={setState}
+        />
+        <StatControl
+          keyValue="stamina"
+          label="Stamina"
+          state={state}
+          setState={setState}
+        />
+        <StatControl
+          keyValue="attack"
+          label="Attack"
+          state={state}
+          setState={setState}
+        />
+        <StatControl
+          keyValue="defense"
+          label="Defense"
+          state={state}
+          setState={setState}
+        />
       </Stack>
-      <Button type="submit" width="100%" disabled={isLoading}>
+      <Button size="sm" type="submit" width="100%" disabled={isLoading}>
         Gimme my stats!
       </Button>
     </Box>

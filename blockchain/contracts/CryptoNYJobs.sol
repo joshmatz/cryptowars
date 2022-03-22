@@ -16,10 +16,28 @@ contract CryptoNYJobs is Ownable {
 
     event JobComplete(
         address indexed sender,
-        uint256 characterId,
+        uint256 indexed characterId,
         uint256 jobTierId,
         uint256 jobId,
         uint256 runs
+    );
+
+    event Transfer(
+        address indexed from,
+        address indexed to,
+        uint256 indexed tokenId
+    );
+
+    event Approval(
+        address indexed owner,
+        address indexed approved,
+        uint256 indexed tokenId
+    );
+
+    event ApprovalForAll(
+        address indexed owner,
+        address indexed operator,
+        bool approved
     );
 
     uint256 public constant REGION = 0;
@@ -177,20 +195,18 @@ contract CryptoNYJobs is Ownable {
             }
         }
 
-        // if (job.requiredItemIds.length != 0) {
-        //     for (uint256 i = 0; i < job.requiredItemIds.length; i++) {
-        //         IItems(itemsContract).burnItemFromCharacter(
-        //             characterId,
-        //             job.requiredItemIds[i],
-        //             job.requiredItemCounts[i]
-        //         );
-        //     }
-        // }
+        if (job.requiredItemIds.length != 0) {
+            for (uint256 i = 0; i < job.requiredItemIds.length; i++) {
+                IItems(itemsContract).useItemFromCharacter(
+                    job.requiredItemIds[i],
+                    characterId,
+                    job.requiredItemCounts[i] * runs
+                );
+            }
+        }
 
         // emit completion event
         emit JobComplete(msg.sender, characterId, tierId, jobId, runs);
-
-        // TODO: Burn items
     }
 
     function _createJobTiers(uint256 total) external onlyOwner {

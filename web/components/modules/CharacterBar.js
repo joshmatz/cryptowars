@@ -29,12 +29,14 @@ const CharacterBar = ({ characterId }) => {
     >
       <Box mr={2}>
         <Text fontWeight="bold">Name</Text>
-        <Text mb={2}>{character.name}</Text>
+        <Text fontSize="sm" mb={2}>
+          {character.name}
+        </Text>
       </Box>
 
       <Box mx={2}>
         <Text fontWeight="bold">Level</Text>
-        <Text mb={2}>
+        <Text fontSize="sm" mb={2}>
           {formatNumber(character.level?.toNumber(), { style: "normal" })} (
           {formatNumber(character?.experience?.toNumber(), { style: "normal" })}
           /
@@ -46,19 +48,24 @@ const CharacterBar = ({ characterId }) => {
           )}
           XP)
           {character.skillPoints?.toNumber()
-            ? `(${character.skillPoints} SP)`
+            ? `(${formatNumber(character.skillPoints, {
+                isWei: false,
+                style: "normal",
+              })}SP)`
             : null}
         </Text>
       </Box>
 
       <Box mx={2}>
         <Text fontWeight="bold">Monies</Text>
-        <Text mb={2}>${!!tokens ? formatNumber(tokens) : null}</Text>
+        <Text fontSize="sm" mb={2}>
+          ${!!tokens ? formatNumber(tokens) : null}
+        </Text>
       </Box>
 
       <Box mx={2}>
         <Text fontWeight="bold">Health</Text>
-        <Text mb={2}>
+        <Text fontSize="sm" mb={2}>
           {formatNumber(character?.health?.adjustedCurrent?.toString(), {
             style: "normal",
           })}{" "}
@@ -71,7 +78,7 @@ const CharacterBar = ({ characterId }) => {
 
       <Box mx={2}>
         <Text fontWeight="bold">Energy</Text>
-        <Text mb={2}>
+        <Text fontSize="sm" mb={2}>
           {formatNumber(character?.energy?.adjustedCurrent?.toString(), {
             style: "normal",
           })}{" "}
@@ -84,7 +91,7 @@ const CharacterBar = ({ characterId }) => {
 
       <Box mx={2}>
         <Text fontWeight="bold">Stamina</Text>
-        <Text mb={2}>
+        <Text fontSize="sm" mb={2}>
           {formatNumber(character?.stamina?.adjustedCurrent?.toString(), {
             style: "normal",
           })}{" "}
@@ -97,7 +104,7 @@ const CharacterBar = ({ characterId }) => {
 
       <Box mx={2}>
         <Text fontWeight="bold">Atk/Def</Text>
-        <Text mb={2}>
+        <Text fontSize="sm" mb={2}>
           {formatNumber(character?.attack?.equippedMax?.toString(), {
             style: "normal",
           })}{" "}

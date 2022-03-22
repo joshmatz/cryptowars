@@ -1,5 +1,10 @@
 import {
   Box,
+  Checkbox,
+  FormControl,
+  FormLabel,
+  Grid,
+  GridItem,
   Icon,
   Stack,
   Table,
@@ -15,7 +20,7 @@ import { useRouter } from "next/router";
 import { useQueries, useQuery } from "react-query";
 import useItemContract from "../../../../components/hooks/useItemContract";
 import GameTemplate from "../../../../components/modules/GameTemplate";
-import { itemTypes } from "shared/utils/items";
+import things, { itemTypes } from "shared/utils/items";
 import { GiStarShuriken } from "react-icons/gi";
 import {
   RiVipDiamondLine,
@@ -27,10 +32,13 @@ import {
   RiFireFill,
   RiSpyFill,
   RiUploadCloud2Fill,
+  RiInkBottleLine,
 } from "react-icons/ri";
 import { FiTriangle, FiShield } from "react-icons/fi";
 import { BiSquare, BiCircle } from "react-icons/bi";
 import { BsShieldFill } from "react-icons/bs";
+import ClassIcon from "../../../../components/modules/ItemClassIcon";
+import { useCallback, useMemo, useState } from "react";
 // function characterItemTypeListLength(uint256 characterId)
 // public
 // view
@@ -55,10 +63,18 @@ import { BsShieldFill } from "react-icons/bs";
 // return characterItems[characterId][itemTypeId].length();
 // }
 
-const classes = ["Weapon", "Armor", "Equipment", "Shill"];
+const rarities = ["Common", "Uncommon", "Rare", "Epic", "Legendary"];
+const classes = [
+  "Workstation",
+  "Software",
+  "Equipment",
+  "Shill",
+  "Boost",
+  "Consumable",
+];
 
 const useCharacterItemIndices = (characterId) => {
-  const itemContract = useItemContract();
+  const { contract: itemContract } = useItemContract();
 
   return useQuery(
     ["characterItemIndices", characterId],
@@ -82,7 +98,7 @@ const useCharacterItemIndices = (characterId) => {
 
 const useCharacterItemTypes = (characterId, indices = []) => {
   console.log({ indices });
-  const itemContract = useItemContract();
+  const { contract: itemContract } = useItemContract();
 
   const itemTypes = useQueries(
     indices.map((_, index) => {
@@ -106,7 +122,7 @@ const useCharacterItemTypes = (characterId, indices = []) => {
 };
 
 const useCharacterItemSupply = (characterId, itemTypeId) => {
-  const itemContract = useItemContract();
+  const { contract: itemContract } = useItemContract();
 
   return useQuery(
     ["characterItemSupply", characterId, itemTypeId],
@@ -143,25 +159,6 @@ const RarityIcon = ({ rarity }) => {
   }
 };
 
-const ClassIcon = ({ classId }) => {
-  switch (classId) {
-    case 1:
-      return <Icon mt={1} as={RiServerFill} title="Workstations" />;
-    case 2:
-      return <Icon mt={1} as={RiTerminalBoxFill} title="Software" />;
-    case 3:
-      return <Icon mt={1} as={RiRadarFill} title="Equipment" />;
-    case 4:
-      return <Icon mt={1} as={RiSpyFill} title="Shill" />;
-    case 5:
-      return <Icon mt={1} as={RiFireFill} title="Boost" />;
-    case 6:
-      return <Icon mt={1} as={RiUploadCloud2Fill} title="Consumable" />;
-    default:
-      return "Unknown";
-  }
-};
-
 const ItemBox = ({ characterId, query: { data: itemTypeId, status } = {} }) => {
   const { data: itemSupply } = useCharacterItemSupply(characterId, itemTypeId);
   if (status === "loading") {
@@ -176,11 +173,11 @@ const ItemBox = ({ characterId, query: { data: itemTypeId, status } = {} }) => {
       <Td>
         <RarityIcon rarity={itemTypes[itemTypeId.toNumber()].rarity} />
       </Td>
-      <Td>{itemTypes[itemTypeId.toNumber()].name}</Td>
+      <Td fontSize="sm">{itemTypes[itemTypeId.toNumber()].name}</Td>
 
-      <Td>ATK: {itemTypes[itemTypeId.toNumber()].attack}</Td>
-      <Td>DEF: {itemTypes[itemTypeId.toNumber()].attack}</Td>
-      <Td>x{itemSupply?.toString()}</Td>
+      <Td fontSize="sm">{itemTypes[itemTypeId.toNumber()].attack}</Td>
+      <Td fontSize="sm">{itemTypes[itemTypeId.toNumber()].attack}</Td>
+      <Td fontSize="sm">x{itemSupply?.toString()}</Td>
     </Tr>
   );
 };
@@ -196,29 +193,93 @@ const InventoryPage = () => {
   const {
     query: { characterId },
   } = router;
-  const { data: items } = useCharacterItems(characterId);
+  const { data: items = [] } = useCharacterItems(characterId);
+  const [filters, setFilters] = useState({});
+  const filteredItems = useMemo(() => {
+    return items.filter(({ data: itemTypeId = {} }) => {
+      if (!itemTypeId.toNumber) {
+        return false;
+      }
+
+      return (
+        Object.keys(filters).length === 0 ||
+        filters[`rarity.${itemTypes[itemTypeId.toNumber()].rarity}`] ||
+        filters[`class.${itemTypes[itemTypeId.toNumber()].class}`]
+      );
+    });
+  }, [items, filters]);
+
+  const toggleFilter = (key) => {
+    setFilters((state) => {
+      if (!filters[key]) {
+        return { ...state, [key]: true };
+      }
+      delete state[key];
+      return { ...state };
+    });
+  };
 
   return (
     <GameTemplate characterId={characterId}>
       <Text mb={5}>Items make your Traveler more powerful.</Text>
 
-      <Table>
-        <Thead>
-          <Tr>
-            <Th>Class</Th>
-            <Th>Rarity</Th>
-            <Th>Name</Th>
-            <Th>Attack</Th>
-            <Th>Defense</Th>
-            <Th>Owned</Th>
-          </Tr>
-        </Thead>
-        <Tbody>
-          {items.map((query, i) => (
-            <ItemBox key={i} characterId={characterId} query={query} />
-          ))}
-        </Tbody>
-      </Table>
+      <Grid templateColumns="240px 1fr">
+        <GridItem>
+          <FormControl mb={5}>
+            <FormLabel fontWeight="bold">Rarity</FormLabel>
+            <Stack>
+              {rarities.map((rarity, i) => {
+                return (
+                  <Checkbox
+                    key={i}
+                    size="sm"
+                    value={filters[`rarity.${i + 1}`]}
+                    onChange={() => toggleFilter(`rarity.${i + 1}`)}
+                  >
+                    {rarity}
+                  </Checkbox>
+                );
+              })}
+            </Stack>
+          </FormControl>
+
+          <FormControl>
+            <FormLabel fontWeight="bold">Class</FormLabel>
+
+            <Stack>
+              {classes.map((className, i) => (
+                <Checkbox
+                  key={i}
+                  size="sm"
+                  value={filters[`class.${i + 1}`]}
+                  onChange={() => toggleFilter(`class.${i + 1}`)}
+                >
+                  {className}
+                </Checkbox>
+              ))}
+            </Stack>
+          </FormControl>
+        </GridItem>
+        <GridItem>
+          <Table>
+            <Thead>
+              <Tr>
+                <Th>Class</Th>
+                <Th>Rarity</Th>
+                <Th>Name</Th>
+                <Th>Attack</Th>
+                <Th>Defense</Th>
+                <Th>Owned</Th>
+              </Tr>
+            </Thead>
+            <Tbody>
+              {filteredItems.map((query, i) => (
+                <ItemBox key={i} characterId={characterId} query={query} />
+              ))}
+            </Tbody>
+          </Table>
+        </GridItem>
+      </Grid>
     </GameTemplate>
   );
 };

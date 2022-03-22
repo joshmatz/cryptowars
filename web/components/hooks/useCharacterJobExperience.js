@@ -2,7 +2,7 @@ import { useQuery } from "react-query";
 import useJobsContract from "./useJobsContract";
 
 const useCharacterJobExperience = (characterId, tierId, jobId) => {
-  const jobsContract = useJobsContract();
+  const { contract: jobsContract } = useJobsContract();
 
   return useQuery(
     ["characterJobExperience", characterId, tierId, jobId],

@@ -19,6 +19,7 @@ import CharacterBar from "./CharacterBar";
 import useJobsContract from "../hooks/useJobsContract";
 import { useQuery } from "react-query";
 import useCharacter from "../hooks/useCharacter";
+import Footer from "./Footer";
 
 const GameNavigation = () => {
   const router = useRouter();
@@ -26,7 +27,7 @@ const GameNavigation = () => {
     query: { characterId },
     asPath,
   } = router;
-  const jobContract = useJobsContract();
+  const { contract: jobContract } = useJobsContract();
   const { data: unlockedJobTiers } = useQuery(
     `unlockedJobTiers-${characterId}`,
     () => jobContract.characterJobTier(characterId),

@@ -11,9 +11,101 @@ export default [
         name: "_walletContract",
         type: "address",
       },
+      {
+        internalType: "address",
+        name: "_itemsContract",
+        type: "address",
+      },
     ],
     stateMutability: "nonpayable",
     type: "constructor",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: "address",
+        name: "owner",
+        type: "address",
+      },
+      {
+        indexed: true,
+        internalType: "address",
+        name: "approved",
+        type: "address",
+      },
+      {
+        indexed: true,
+        internalType: "uint256",
+        name: "tokenId",
+        type: "uint256",
+      },
+    ],
+    name: "Approval",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: "address",
+        name: "owner",
+        type: "address",
+      },
+      {
+        indexed: true,
+        internalType: "address",
+        name: "operator",
+        type: "address",
+      },
+      {
+        indexed: false,
+        internalType: "bool",
+        name: "approved",
+        type: "bool",
+      },
+    ],
+    name: "ApprovalForAll",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: "address",
+        name: "sender",
+        type: "address",
+      },
+      {
+        indexed: true,
+        internalType: "uint256",
+        name: "characterId",
+        type: "uint256",
+      },
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "jobTierId",
+        type: "uint256",
+      },
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "jobId",
+        type: "uint256",
+      },
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "runs",
+        type: "uint256",
+      },
+    ],
+    name: "JobComplete",
+    type: "event",
   },
   {
     anonymous: false,
@@ -32,6 +124,31 @@ export default [
       },
     ],
     name: "OwnershipTransferred",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: "address",
+        name: "from",
+        type: "address",
+      },
+      {
+        indexed: true,
+        internalType: "address",
+        name: "to",
+        type: "address",
+      },
+      {
+        indexed: true,
+        internalType: "uint256",
+        name: "tokenId",
+        type: "uint256",
+      },
+    ],
+    name: "Transfer",
     type: "event",
   },
   {
@@ -61,8 +178,14 @@ export default [
     type: "function",
   },
   {
-    inputs: [],
-    name: "_createJobTier",
+    inputs: [
+      {
+        internalType: "uint256",
+        name: "total",
+        type: "uint256",
+      },
+    ],
+    name: "_createJobTiers",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",
@@ -72,6 +195,11 @@ export default [
       {
         internalType: "uint256",
         name: "tier",
+        type: "uint256",
+      },
+      {
+        internalType: "uint256",
+        name: "jobId",
         type: "uint256",
       },
       {
@@ -94,8 +222,23 @@ export default [
         name: "experiencePerTier",
         type: "uint256",
       },
+      {
+        internalType: "uint256[]",
+        name: "requiredItemIds",
+        type: "uint256[]",
+      },
+      {
+        internalType: "uint256[]",
+        name: "requiredItemCounts",
+        type: "uint256[]",
+      },
+      {
+        internalType: "uint256[]",
+        name: "rewardItemIds",
+        type: "uint256[]",
+      },
     ],
-    name: "_createJobType",
+    name: "_setJobType",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",
@@ -176,6 +319,19 @@ export default [
   {
     inputs: [],
     name: "contractOwner",
+    outputs: [
+      {
+        internalType: "address",
+        name: "",
+        type: "address",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "itemsContract",
     outputs: [
       {
         internalType: "address",

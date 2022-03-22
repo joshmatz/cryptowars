@@ -191,6 +191,21 @@ contract CryptoNYItems is ERC721, ERC721Enumerable, Ownable {
         totalItemTypeSupply[_itemTypeId]++;
     }
 
+    function useItemFromCharacter(
+        uint256 _itemTypeId,
+        uint256 _characterId,
+        uint256 _itemCount
+    ) public isGameContract {
+        require(
+            characterItems[_characterId][_itemTypeId].length() >= _itemCount,
+            "CryptoNYItems.useItemFromCharacter.notEnoughItems"
+        );
+
+        if (itemTypes[_itemTypeId].class == ItemClass.CONSUMABLE) {
+            burnItemFromCharacter(_itemTypeId, _characterId);
+        }
+    }
+
     function burnItemFromCharacter(uint256 _itemTypeId, uint256 _characterId)
         public
         isGameContract

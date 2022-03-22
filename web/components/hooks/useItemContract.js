@@ -21,7 +21,11 @@ const useItemContract = () => {
     return _pc;
   }, [signer, isCorrectChain]);
 
-  return ItemContract;
+  return {
+    contract: ItemContract,
+    abi: ItemContractAbi,
+    address: ItemContractAddress,
+  };
 };
 
 export default useItemContract;

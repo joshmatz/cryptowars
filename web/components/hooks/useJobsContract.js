@@ -21,7 +21,11 @@ const useJobsContract = () => {
     return _pc;
   }, [signer, isCorrectChain]);
 
-  return JobsContract;
+  return {
+    contract: JobsContract,
+    abi: JobsContractAbi,
+    address: JobsContractAddress,
+  };
 };
 
 export default useJobsContract;
