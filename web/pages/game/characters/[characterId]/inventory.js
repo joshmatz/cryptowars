@@ -20,54 +20,19 @@ import { useRouter } from "next/router";
 import { useQueries, useQuery } from "react-query";
 import useItemContract from "../../../../components/hooks/useItemContract";
 import GameTemplate from "../../../../components/modules/GameTemplate";
-import things, { itemTypes } from "shared/utils/items";
+import { itemTypes } from "shared/utils/items";
 import { GiStarShuriken } from "react-icons/gi";
-import {
-  RiVipDiamondLine,
-  RiSwordLine,
-  RiComputerFill,
-  RiTerminalBoxFill,
-  RiServerFill,
-  RiRadarFill,
-  RiFireFill,
-  RiSpyFill,
-  RiUploadCloud2Fill,
-  RiInkBottleLine,
-} from "react-icons/ri";
-import { FiTriangle, FiShield } from "react-icons/fi";
+import { RiVipDiamondLine, RiSortAsc, RiSortDesc } from "react-icons/ri";
+import { FiTriangle } from "react-icons/fi";
 import { BiSquare, BiCircle } from "react-icons/bi";
-import { BsShieldFill } from "react-icons/bs";
 import ClassIcon from "../../../../components/modules/ItemClassIcon";
-import { useCallback, useMemo, useState } from "react";
-// function characterItemTypeListLength(uint256 characterId)
-// public
-// view
-// returns (uint256)
-// {
-// return characterItemTypes[characterId].length();
-// }
-
-// function characterItemType(uint256 characterId, uint256 itemTypeIndex)
-// public
-// view
-// returns (uint256)
-// {
-// return characterItemTypes[characterId].at(itemTypeIndex);
-// }
-
-// function characterItemSupply(uint256 characterId, uint256 itemTypeId)
-// public
-// view
-// returns (uint256)
-// {
-// return characterItems[characterId][itemTypeId].length();
-// }
+import { useMemo, useState } from "react";
 
 const rarities = ["Common", "Uncommon", "Rare", "Epic", "Legendary"];
 const classes = [
   "Workstation",
   "Software",
-  "Equipment",
+  "Connection",
   "Shill",
   "Boost",
   "Consumable",
@@ -97,7 +62,6 @@ const useCharacterItemIndices = (characterId) => {
 };
 
 const useCharacterItemTypes = (characterId, indices = []) => {
-  console.log({ indices });
   const { contract: itemContract } = useItemContract();
 
   const itemTypes = useQueries(
@@ -116,7 +80,6 @@ const useCharacterItemTypes = (characterId, indices = []) => {
       };
     })
   );
-  console.log({ itemTypes });
 
   return itemTypes;
 };
@@ -181,11 +144,31 @@ const ItemBox = ({ characterId, query: { data: itemTypeId, status } = {} }) => {
     </Tr>
   );
 };
+
 const useCharacterItems = (characterId) => {
   const { data: indices } = useCharacterItemIndices(characterId);
   const itemTypes = useCharacterItemTypes(characterId, indices);
 
   return { data: itemTypes };
+};
+
+const TableSort = ({ column, sort }) => {
+  if (column !== sort.column) {
+    return (
+      <Box
+        display="inline-block"
+        mb={-1}
+        w={4}
+        h={4}
+        lineHeight={"1em"}
+        flexShrink="0"
+      />
+    );
+  }
+
+  const Direction = sort.direction === "asc" ? RiSortAsc : RiSortDesc;
+
+  return <Icon w={4} h={4} mb={-1} as={Direction} />;
 };
 
 const InventoryPage = () => {
@@ -195,8 +178,13 @@ const InventoryPage = () => {
   } = router;
   const { data: items = [] } = useCharacterItems(characterId);
   const [filters, setFilters] = useState({});
+  const [sort, setSort] = useState({
+    column: "name",
+    direction: "asc",
+  });
+
   const filteredItems = useMemo(() => {
-    return items.filter(({ data: itemTypeId = {} }) => {
+    const filteredList = items.filter(({ data: itemTypeId = {} }) => {
       if (!itemTypeId.toNumber) {
         return false;
       }
@@ -207,7 +195,30 @@ const InventoryPage = () => {
         filters[`class.${itemTypes[itemTypeId.toNumber()].class}`]
       );
     });
-  }, [items, filters]);
+
+    return filteredList.sort(
+      ({ data: itemTypeA = {} }, { data: itemTypeB = {} }) => {
+        if (!itemTypeA.toNumber || !itemTypeB.toNumber) {
+          return 0;
+        }
+
+        const aValue = itemTypes[itemTypeA.toNumber()][sort.column];
+        const bValue = itemTypes[itemTypeB.toNumber()][sort.column];
+
+        if (aValue === bValue) {
+          return 0;
+        }
+
+        if (sort.direction === "asc") {
+          return aValue < bValue ? -1 : 1;
+        } else {
+          return aValue > bValue ? -1 : 1;
+        }
+      }
+    );
+
+    return filteredList;
+  }, [items, filters, sort]);
 
   const toggleFilter = (key) => {
     setFilters((state) => {
@@ -217,6 +228,17 @@ const InventoryPage = () => {
       delete state[key];
       return { ...state };
     });
+  };
+
+  const handleSort = (column) => () => {
+    if (sort.column === column) {
+      setSort((state) => ({
+        ...state,
+        direction: state.direction === "asc" ? "desc" : "asc",
+      }));
+    } else {
+      setSort({ column, direction: "asc" });
+    }
   };
 
   return (
@@ -264,11 +286,36 @@ const InventoryPage = () => {
           <Table>
             <Thead>
               <Tr>
-                <Th>Class</Th>
-                <Th>Rarity</Th>
-                <Th>Name</Th>
-                <Th>Attack</Th>
-                <Th>Defense</Th>
+                <Th cursor={"pointer"} onClick={handleSort("class")}>
+                  <Stack direction="row">
+                    <Text>Class</Text>
+                    <TableSort sort={sort} setSort={setSort} column="class" />
+                  </Stack>
+                </Th>
+                <Th cursor="pointer" onClick={handleSort("rarity")}>
+                  <Stack direction="row">
+                    <Text>Rarity</Text>
+                    <TableSort sort={sort} setSort={setSort} column="rarity" />
+                  </Stack>
+                </Th>
+                <Th cursor={"pointer"} onClick={handleSort("name")}>
+                  <Stack direction="row">
+                    <Text>Name</Text>
+                    <TableSort sort={sort} setSort={setSort} column="name" />
+                  </Stack>
+                </Th>
+                <Th cursor={"pointer"} onClick={handleSort("attack")}>
+                  <Stack direction="row">
+                    <Text>Attack</Text>
+                    <TableSort sort={sort} setSort={setSort} column="attack" />
+                  </Stack>
+                </Th>
+                <Th cursor={"pointer"} onClick={handleSort("defense")}>
+                  <Stack direction="row">
+                    <Text>Defense</Text>
+                    <TableSort sort={sort} setSort={setSort} column="defense" />
+                  </Stack>
+                </Th>
                 <Th>Owned</Th>
               </Tr>
             </Thead>

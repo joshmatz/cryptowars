@@ -15,7 +15,7 @@ const ClassIcon = ({ classId, ...props }) => {
     case 2:
       return <Icon mt={1} as={RiTerminalBoxFill} title="Software" {...props} />;
     case 3:
-      return <Icon mt={1} as={RiRadarFill} title="Equipment" {...props} />;
+      return <Icon mt={1} as={RiRadarFill} title="Connection" {...props} />;
     case 4:
       return <Icon mt={1} as={RiSpyFill} title="Shill" {...props} />;
     case 5:

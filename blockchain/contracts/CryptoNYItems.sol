@@ -51,6 +51,7 @@ contract CryptoNYItems is ERC721, ERC721Enumerable, Ownable {
     struct OwnedItem {
         uint256 itemTypeId;
         uint256 characterId;
+        bool equipped;
     }
 
     // Describes the minted itemId
@@ -67,12 +68,15 @@ contract CryptoNYItems is ERC721, ERC721Enumerable, Ownable {
     //characterItems[characterId] = Set of itemTypeIds owned by character
     mapping(uint256 => EnumerableSet.UintSet) private characterItemTypes;
 
-    //characterItems[characterId] = set of itemIds owned by character
+    //characterItems[characterId][itemTypeId] = set of itemIds owned by character
     mapping(uint256 => mapping(uint256 => EnumerableSet.UintSet))
         private characterItems;
 
-    // TODO: This should be an array so it's more easily verifiable
-    // or maybe an address set?
+    mapping(uint256 => mapping(uint256 => EnumerableSet.UintSet))
+        private characterEquippedItems;
+
+    // unequipped items
+
     mapping(address => bool) public gameContracts;
 
     constructor(address charContract) ERC721("CryptoNY", "CNY") {
@@ -125,8 +129,7 @@ contract CryptoNYItems is ERC721, ERC721Enumerable, Ownable {
         return characterItems[characterId][itemTypeId].at(itemIndex);
     }
 
-    // [job.rewardItemIds[i], characterId, newExp, runs]
-
+    // _rewardData = [job.rewardItemIds[i], characterId, newExp, runs]
     function rewardItemToCharacter(
         address _caller,
         uint256[4] calldata _rewardData
@@ -138,27 +141,6 @@ contract CryptoNYItems is ERC721, ERC721Enumerable, Ownable {
         uint256 _rarityChance = itemRarityWeights[
             uint256(itemTypes[_rewardData[0]].rarity)
         ];
-
-        // console.log("_rarityChance", _rarityChance);
-
-        //(( success - (attempts * rarity)) / 5) + (attempts * rarity)
-
-        // TODO: This has the downside of minting too many or too little according
-        // to our intended rarity in cases where the roll is great or terrible.
-        // How can we normalize the distribution to the intended rarity?
-        // uint256 _rarityRoll = _random(
-        //     _seed,
-        //     1000 - _rarityChance + _rarityChance * _attempts
-        // );
-        // uint256 successes = _rarityRoll.div(
-        //     _rarityChance + _rarityChance * _attempts
-        // );
-
-        // uint256 dampenForce = _attempts;
-        // uint256 dampenTo = (_attempts * (1000 + (1000 - _rarityChance)));
-        // successes = ((successes - dampenTo) / dampenForce) + dampenTo;
-
-        // console.log(_attempts, successes);
 
         for (uint256 i = 0; i < _rewardData[3]; i++) {
             uint256 _rarityRoll = _random(
@@ -185,7 +167,7 @@ contract CryptoNYItems is ERC721, ERC721Enumerable, Ownable {
         uint256 itemId = currentTokenId;
         currentTokenId += 1;
         _safeMint(_caller, itemId);
-        ownedItems[itemId] = OwnedItem(_itemTypeId, _characterId);
+        ownedItems[itemId] = OwnedItem(_itemTypeId, _characterId, false);
         characterItemTypes[_characterId].add(_itemTypeId);
         characterItems[_characterId][_itemTypeId].add(itemId);
         totalItemTypeSupply[_itemTypeId]++;
@@ -270,6 +252,7 @@ contract CryptoNYItems is ERC721, ERC721Enumerable, Ownable {
         // TODO: Check to see if character has maximum items equipped
         // TODO: Check lowest value item if all item slots are taken.
         // TODO: Unequip lowest value item and equip this new item.
+        // What is the next lowest item type?
         // TODO: Update character stats.
     }
 

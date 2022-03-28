@@ -38,7 +38,8 @@ const getItemInfo = (itemClass, rawItem) => {
   const defense = parseInt(parsedItem[defenseIndex], 10);
 
   return {
-    name: parsedItem[0],
+    originalName: parsedItem[0],
+    name: parsedItem[10],
     class: itemClass,
     attack,
     defense,
@@ -86,7 +87,8 @@ const itemTypes = [
 
 const getItemTypeId = (itemTypeName) => {
   const found = itemTypes.findIndex(
-    (itemType) => itemType.name.toLowerCase() === itemTypeName.toLowerCase()
+    (itemType) =>
+      itemType.originalName.toLowerCase() === itemTypeName.toLowerCase()
   );
   if (found === -1) {
     console.error("Item Type Not Found for", itemTypeName);

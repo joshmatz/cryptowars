@@ -1,8 +1,10 @@
 import { useToast } from "@chakra-ui/react";
 import { useEffect } from "react";
+import { useWeb3Context } from "../Web3ContextProvider";
 import useItemContract from "./useItemContract";
 
 const useItemListener = (address) => {
+  const { connected } = useWeb3Context();
   const { contract } = useItemContract();
   const toast = useToast();
   useEffect(() => {
@@ -27,7 +29,7 @@ const useItemListener = (address) => {
 
     // TODO: Burn listener
 
-    if (contract) {
+    if (contract && connected) {
       events = contract.filters.Transfer(null, address);
       subscription = contract.on(events, receiveListener);
     }
@@ -37,7 +39,7 @@ const useItemListener = (address) => {
         subscription.off(events, receiveListener);
       }
     };
-  }, [contract, address, toast]);
+  }, [contract, address, toast, connected]);
 };
 
 export default useItemListener;

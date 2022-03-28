@@ -105,25 +105,22 @@ const JobRow = ({ job, tierId, jobIndex, characterId }) => {
               <TagLabel>{job.energy.toString()} Energy</TagLabel>
             </Tag>
             {job.requiredItemTypeNames.map((itemTypeName, i) => {
+              const itemType = itemTypes[getItemTypeId(itemTypeName)];
               return (
                 <Tag
-                  key={itemTypeName}
+                  key={itemType.name}
                   size="sm"
-                  title={`${job.requiredItemTypeCounts[i]}x ${itemTypeName}`}
+                  title={`${job.requiredItemTypeCounts[i]}x ${itemType.name}`}
                 >
-                  {itemTypes[getItemTypeId(itemTypeName)].class === 6 ? (
+                  {itemType.class === 6 ? (
                     <TagLeftIcon
                       as={() => (
-                        <ClassIcon
-                          mt={0}
-                          mr={1}
-                          classId={itemTypes[getItemTypeId(itemTypeName)].class}
-                        />
+                        <ClassIcon mt={0} mr={1} classId={itemType.class} />
                       )}
                     />
                   ) : null}
                   <TagLabel>
-                    {job.requiredItemTypeCounts[i]}x {itemTypeName}
+                    {job.requiredItemTypeCounts[i]}x {itemType.name}
                   </TagLabel>
                 </Tag>
               );
@@ -138,14 +135,15 @@ const JobRow = ({ job, tierId, jobIndex, characterId }) => {
               <TagLabel>{job.experience}XP</TagLabel>
             </Tag>
             {job.rewardItemTypeNames.map((itemTypeName, i) => {
+              const itemType = itemTypes[getItemTypeId(itemTypeName)];
               return (
                 <Tag
-                  key={itemTypeName}
+                  key={itemType.name}
                   size="sm"
                   variant="outline"
-                  title={itemTypeName}
+                  title={itemType.name}
                 >
-                  <TagLabel>{itemTypeName}</TagLabel>
+                  <TagLabel>{itemType.name}</TagLabel>
                 </Tag>
               );
             })}
@@ -156,77 +154,71 @@ const JobRow = ({ job, tierId, jobIndex, characterId }) => {
       <Stack
         flex="1 0 50%"
         display="flex"
-        alignItems="center"
-        justifyContent={"space-between"}
-        direction={{ base: "column", sm: "row" }}
+        alignItems="flex-end"
+        direction={{ base: "column" }}
         as="form"
         onSubmit={(e) => {
           e.preventDefault();
           completeJob();
         }}
       >
-        <Box
-          flex="1 0 auto"
-          width="50%"
-          // opacity={jobExperience?.total?.toNumber() ? 1 : 0.5}
-        >
-          {jobExperience?.level.toNumber() === 3 ? (
-            <Text>Mastery 3 Reached</Text>
-          ) : (
-            <>
-              <Progress
-                size="xs"
-                mb={1}
-                value={
-                  (100 *
-                    Math.round(
-                      jobExperience?.total.toNumber() % job.experiencePerTier
-                    )) /
-                  job.experiencePerTier
-                }
-              />
-              <Text fontSize="sm">
-                Mastery: {jobExperience?.level.toNumber()} | Next:{" "}
-                {job.experiencePerTier
-                  ? job.experiencePerTier -
-                    formatNumber(
-                      jobExperience?.total.toNumber() % job.experiencePerTier,
-                      { style: "normal" }
-                    )
-                  : 0}
-                XP
-              </Text>
-            </>
-          )}
-        </Box>
-        {character.energy.adjustedCurrent.lt(job.energy) ? null : (
-          <Input
-            type="number"
-            value={jobRuns}
-            onChange={(e) => setJobRuns(e.target.value)}
-            min="1"
-            max="150"
-            size="sm"
-          />
+        {jobExperience?.level.toNumber() === 3 ? (
+          <Text fontSize="sm">Maximum Mastery</Text>
+        ) : (
+          <Stack>
+            <Text fontSize="sm">
+              Mastery: {jobExperience?.level.toNumber()} | Next:{" "}
+              {job.experiencePerTier
+                ? job.experiencePerTier -
+                  formatNumber(
+                    jobExperience?.total.toNumber() % job.experiencePerTier,
+                    { style: "normal" }
+                  )
+                : 0}
+              XP
+            </Text>
+            <Progress
+              size="xs"
+              value={
+                (100 *
+                  Math.round(
+                    jobExperience?.total.toNumber() % job.experiencePerTier
+                  )) /
+                job.experiencePerTier
+              }
+            />
+          </Stack>
         )}
+        <Stack direction="row">
+          {character.energy.adjustedCurrent.lt(job.energy) ? null : (
+            <Input
+              type="number"
+              value={jobRuns}
+              onChange={(e) => setJobRuns(e.target.value)}
+              min="1"
+              max="150"
+              size="sm"
+            />
+          )}
 
-        <Button
-          flex="1 0 auto"
-          disabled={
-            character.energy.adjustedCurrent.lt(job.energy * jobRuns) ||
-            isLoading
-          }
-          type="submit"
-          size="sm"
-        >
-          {character.energy.adjustedCurrent.lt(job.energy * jobRuns)
-            ? `-${BigNumber.from(job.energy * jobRuns)
-                .sub(character.energy.adjustedCurrent)
-                .toString()} Energy`
-            : isLoading
-            ? "..."
-            : "Complete"}
-        </Button>
+          <Button
+            flex="1 0 auto"
+            disabled={
+              character.energy.adjustedCurrent.lt(job.energy * jobRuns) ||
+              isLoading
+            }
+            type="submit"
+            size="sm"
+          >
+            {character.energy.adjustedCurrent.lt(job.energy * jobRuns)
+              ? `-${BigNumber.from(job.energy * jobRuns)
+                  .sub(character.energy.adjustedCurrent)
+                  .toString()} Energy`
+              : isLoading
+              ? "..."
+              : "Complete"}
+          </Button>
+        </Stack>
       </Stack>
     </Box>
   );

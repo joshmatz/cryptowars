@@ -758,7 +758,7 @@ jobTiers.push({
       experiencePerTier: 60 * 5,
       requiredItemTypeNames: ["Computer Set-Up"],
       requiredItemTypeCounts: [1],
-      rewardItemTypeNames: ["Falsified Documents"],
+      rewardItemTypeNames: ["Set of Falsified Documents"],
     },
   ],
 });
