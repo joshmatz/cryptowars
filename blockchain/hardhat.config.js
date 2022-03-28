@@ -61,7 +61,7 @@ task("increaseTime", "Increases the time on the network")
     await network.provider.send("evm_increaseTime", [time * 60]);
   });
 
-//  npx hardhat addOwnerAsGameContract --type CryptoChar --address 0x406e5D7dDaA4029eB8B957aD7677c63e15c28AC7 --network localhost
+//  npx hardhat addOwnerAsGameContract --type CryptoChar --address 0xf953b3A269d80e3eB0F2947630Da976B896A8C5b --network localhost
 task("addOwnerAsGameContract", "Adds the owner as a game contract")
   .addParam(
     "type",
@@ -77,7 +77,7 @@ task("addOwnerAsGameContract", "Adds the owner as a game contract")
     await contract.addGameContract(accounts[0].address);
   });
 
-// npx hardhat updateCharacterAttributes --address 0x406e5D7dDaA4029eB8B957aD7677c63e15c28AC7 --experience 1000000000000 --network localhost
+// npx hardhat updateCharacterAttributes --address 0xf953b3A269d80e3eB0F2947630Da976B896A8C5b --experience 1000000000000 --network localhost
 task("updateCharacterAttributes", "Updates the character attributes")
   .addParam("address", "Address of the contract", "0x0", types.address)
   .addOptionalParam("characterId", "The character id", 0, types.int)
